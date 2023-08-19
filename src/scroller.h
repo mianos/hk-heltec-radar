@@ -53,7 +53,64 @@ public:
     textPosition = text.length() - 1;
   }
 
-  void scroll() {
+	void scroll() {
+			if (millis() - lastScrollTime < scrollDelay) return;
+
+			if (finishedScrolling) {
+				currentTextIndex++;
+				if (currentTextIndex >= textList.size()) {
+					return; // All texts have been displayed
+				}
+				text = textList.get(currentTextIndex);
+				textPosition = 0;  // Start at the beginning of the text
+				finishedScrolling = false;
+				// Clear the display buffer
+				for (int i = 0; i < SCREEN_WIDTH / charWidth; i++) {
+					displayBuffer[i] = ' ';
+				}
+			}
+
+			// Shift everything in the buffer to the left
+			for (int i = 0; i < SCREEN_WIDTH / charWidth - 1; i++) {
+				displayBuffer[i] = displayBuffer[i + 1];
+			}
+
+			// Add the next character from the text to the buffer, or a space if the text is done
+			if (textPosition < text.length()) {
+				displayBuffer[SCREEN_WIDTH / charWidth - 1] = text[textPosition];
+				textPosition++;
+			} else {
+				displayBuffer[SCREEN_WIDTH / charWidth - 1] = ' ';
+			}
+
+			// Check if the buffer is empty (all spaces), indicating the scrolling is finished
+			bool bufferEmpty = true;
+			for (int i = 0; i < SCREEN_WIDTH / charWidth; i++) {
+				if (displayBuffer[i] != ' ') {
+					bufferEmpty = false;
+					break;
+				}
+			}
+			if (bufferEmpty) {
+				finishedScrolling = true;
+			}
+
+			// Clear the top line
+			display.fillRect(0, 0, SCREEN_WIDTH, 8, SSD1306_BLACK);
+
+			// Draw the buffer
+			display.setTextSize(1);
+			display.setTextColor(SSD1306_WHITE);
+			display.setCursor(0, 0);
+			display.print(displayBuffer);
+			display.display();
+
+			lastScrollTime = millis(); // Update the last scroll time
+	}
+
+
+
+  void scrollR() {
     if (millis() - lastScrollTime < scrollDelay) return;
 
     if (finishedScrolling) {
