@@ -99,6 +99,7 @@ public:
 			display.fillRect(0, 0, SCREEN_WIDTH, 8, SSD1306_BLACK);
 
 			// Draw the buffer
+      display.setFont();
 			display.setTextSize(1);
 			display.setTextColor(SSD1306_WHITE);
 			display.setCursor(0, 0);
