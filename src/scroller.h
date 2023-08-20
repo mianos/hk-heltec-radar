@@ -104,7 +104,6 @@ public:
 			display.setTextColor(SSD1306_WHITE);
 			display.setCursor(0, 0);
 			display.print(displayBuffer);
-			display.display();
 
 			lastScrollTime = millis(); // Update the last scroll time
 	}
@@ -161,7 +160,6 @@ public:
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);
     display.print(displayBuffer);
-    display.display();
 
     lastScrollTime = millis(); // Update the last scroll time
   }

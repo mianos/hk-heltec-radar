@@ -51,7 +51,6 @@ public:
     // Display the distance below the scroller, starting at the specified x and y offset
     display.setCursor(x, 8 + y + num_height);
     display.println(distanceStr);
-    display.display();
 
     // Update the maximum width if the current width is greater
     if (w > max_width) {
