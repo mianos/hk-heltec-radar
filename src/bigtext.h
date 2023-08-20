@@ -46,7 +46,10 @@ public:
 
     // Clear the maximum width so far, starting at the specified x and y offset
     // Extend the clearing area slightly to the right and bottom
-    display.fillRect(x, 8 + y, max_width + 1, num_height + 2, SSD1306_BLACK);
+    display.fillRect(x, 8 + y, max_width + 2, num_height + 2, SSD1306_BLACK);
+	  if (distance == 0.0f) {
+			return;
+		}
 
     // Display the distance below the scroller, starting at the specified x and y offset
     display.setCursor(x, 8 + y + num_height);
