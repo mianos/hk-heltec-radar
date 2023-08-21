@@ -19,7 +19,7 @@ void RadarMqtt::callback(char *topic_str, byte *payload, unsigned int length) {
     scroller.taf("Item count less than 3 %d '%s'\n", itemCount, topic_str);
     return;
   }
-#if 1
+#if 0
   for (int i = 0; i < itemCount; i++) {
     String item = splitter.getItemAtIndex(i);
     Serial.printf("Item '%s' index %d\n", item.c_str(), i);
@@ -40,6 +40,7 @@ void RadarMqtt::callback(char *topic_str, byte *payload, unsigned int length) {
       if (jpl.containsKey("report")) {
         report_ranges = jpl["report"].as<bool>();
         scroller.taf("reporting  ranges '%d'\n", report_ranges);
+        Serial.printf("reporting  ranges '%d'\n", report_ranges);
       }
     }
   }
@@ -109,12 +110,15 @@ void RadarMqtt::send() {
 }
 
 
-void RadarMqtt::mqtt_update_presence(bool state, float distance, float strengthValue) {
+void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, float strengthValue) {
   if (!client.connected()) {
     reconnect();
   }
+  if (other && !report_ranges) {
+    return;
+  }
   StaticJsonDocument<200> doc;
-  doc["state"] = state;
+  doc["entry"] = entry;
   if (distance != 0.0) {
     doc["distance"] =  (int)(distance * 100 + 0.5) / 100.0;
   }

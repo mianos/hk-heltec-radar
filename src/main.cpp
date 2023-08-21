@@ -33,7 +33,9 @@ struct LRadar : public LD2125 {
     bigText.displayLargeDistance(distanceValue, 10, 8);
     powerLine.show(strengthValue / 4);
     if (entry) {
-      mqtt.mqtt_update_presence(entry, distanceValue, strengthValue);
+      mqtt.mqtt_update_presence(entry, false, distanceValue, strengthValue);
+    } else {
+      mqtt.mqtt_update_presence(entry, true, distanceValue, strengthValue);
     }
   }
   virtual void Cleared() {
