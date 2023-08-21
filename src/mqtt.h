@@ -19,9 +19,7 @@ struct RadarMqtt {
   void add_radar(LD2125 *new_radar);
 
   void reconnect();
-
   void handle();
-  void send();
 
   void mqtt_update_presence(bool entry, bool other=false, float distance=0.0, float strengthValue=0.0);
 };

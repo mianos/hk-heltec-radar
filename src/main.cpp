@@ -16,10 +16,10 @@
 TwoWire twi = TwoWire(1); // create our own TwoWire instance
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &twi, OLED_RESET);
 
-ScrollingText scroller(display);
-BigText bigText(display);
-PowerLine powerLine(display);
-RadarMqtt mqtt(scroller);
+ScrollingText scroller{display};
+BigText bigText{display};
+PowerLine powerLine{display};
+RadarMqtt mqtt{scroller};
 
 
 struct LRadar : public LD2125 {

@@ -34,13 +34,12 @@ void RadarMqtt::callback(char *topic_str, byte *payload, unsigned int length) {
     }
     String output;
     serializeJson(jpl, output);
-    scroller.taf("payload '%s'\n", output.c_str());
+    // scroller.taf("payload '%s'\n", output.c_str());
     auto dest = splitter.getItemAtIndex(2);
     if (dest == "ranges") {
       if (jpl.containsKey("report")) {
         report_ranges = jpl["report"].as<bool>();
-        scroller.taf("reporting  ranges '%d'\n", report_ranges);
-        Serial.printf("reporting  ranges '%d'\n", report_ranges);
+        scroller.taf("reporting  ranges: %s\n", report_ranges ? "true" : "false");
       }
     }
   }
@@ -52,6 +51,7 @@ RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scro
                 callback(topic_str, payload, length);
   });
 }
+
 void RadarMqtt::add_radar(LD2125 *new_radar) {
   radar = new_radar;
 }
@@ -72,7 +72,7 @@ void RadarMqtt::reconnect() {
       // Once connected, publish an announcement...
 
       StaticJsonDocument<200> doc;
-      doc["version"] = 2;
+      doc["version"] = 3;
       doc["time"] = DateTime.toISOString();
       String status_topic = "tele/" + String(dname) + "/init";
       String output;
@@ -95,21 +95,6 @@ void RadarMqtt::handle() {
   client.loop();
 }
 
-void RadarMqtt::send() {
-  if (!client.connected()) {
-    reconnect();
-  }
-  if (report_ranges) {
-    StaticJsonDocument<200> sdoc;
-/*      dr.build_json_data(sdoc);
-    String o2;
-    serializeJson(sdoc, o2);
-    String t2 = String("tele/") + dname + "/ranges";
-    client.publish(t2.c_str(), o2.c_str()); */
-  }
-}
-
-
 void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, float strengthValue) {
   if (!client.connected()) {
     reconnect();
@@ -120,7 +105,10 @@ void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, flo
   StaticJsonDocument<200> doc;
   doc["entry"] = entry;
   if (distance != 0.0) {
-    doc["distance"] =  (int)(distance * 100 + 0.5) / 100.0;
+    doc["distance"] =  (int)(distance * 100.0 + 0.5) / 100.0;
+  }
+  if (strengthValue != 0.0) {
+    doc["strength"] =  (int)(strengthValue * 10.0 + 0.5) / 10.0;
   }
   doc["time"] = DateTime.toISOString();
   String status_topic = "tele/" + String(dname) + "/presence";
