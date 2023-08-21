@@ -4,11 +4,10 @@
 #include <WiFi.h>
 #include <StringSplitter.h>
 
+#include "radar.h"
 #include "mqtt.h"
 
 
-static const char *dname = "radar";
-const char *mqtt_server = "mqtt2.mianos.com";
 
 void RadarMqtt::callback(char *topic_str, byte *payload, unsigned int length) {
   //scroller.taf("Message arrived, topic '%s'\n", topic_str);
@@ -20,10 +19,10 @@ void RadarMqtt::callback(char *topic_str, byte *payload, unsigned int length) {
     scroller.taf("Item count less than 3 %d '%s'\n", itemCount, topic_str);
     return;
   }
-#if 0
+#if 1
   for (int i = 0; i < itemCount; i++) {
     String item = splitter.getItemAtIndex(i);
-    scroller.taf("Item '%s' index %d\n", item.c_str(), i);
+    Serial.printf("Item '%s' index %d\n", item.c_str(), i);
   }
 #endif
   if (splitter.getItemAtIndex(0) == "cmnd") {
@@ -51,6 +50,9 @@ RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scro
   client.setCallback([this](char *topic_str, byte *payload, unsigned int length) {
                 callback(topic_str, payload, length);
   });
+}
+void RadarMqtt::add_radar(LD2125 *new_radar) {
+  radar = new_radar;
 }
 
 void RadarMqtt::reconnect() {
@@ -107,16 +109,16 @@ void RadarMqtt::send() {
 }
 
 
-void RadarMqtt::mqtt_update_presence(bool state, int iseen) {
+void RadarMqtt::mqtt_update_presence(bool state, float distance, float strengthValue) {
   if (!client.connected()) {
     reconnect();
   }
   StaticJsonDocument<200> doc;
   doc["state"] = state;
-  doc["time"] = DateTime.toISOString();
-  if (iseen) {
-    doc["iseen"] = iseen;
+  if (distance != 0.0) {
+    doc["distance"] =  (int)(distance * 100 + 0.5) / 100.0;
   }
+  doc["time"] = DateTime.toISOString();
   String status_topic = "tele/" + String(dname) + "/presence";
   String output;
   serializeJson(doc, output);

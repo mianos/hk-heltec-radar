@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <ESPDateTime.h>
 
 #include "lwifi.h"
 #include "radar.h"
@@ -24,14 +25,21 @@ RadarMqtt mqtt(scroller);
 struct LRadar : public LD2125 {
   Adafruit_SSD1306& display;
 
-  LRadar(Adafruit_SSD1306& displayInstance) : LD2125(), display(displayInstance) {}
+  LRadar(Adafruit_SSD1306& displayInstance) : LD2125(), display(displayInstance) {
+    mqtt.add_radar(this);
+  }
+
   virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) {
     bigText.displayLargeDistance(distanceValue, 10, 8);
     powerLine.show(strengthValue / 4);
+    if (entry) {
+      mqtt.mqtt_update_presence(entry, distanceValue, strengthValue);
+    }
   }
   virtual void Cleared() {
     bigText.displayLargeDistance(0.0, 10, 8);
     powerLine.show(0);
+    mqtt.mqtt_update_presence(false);
   }
 } *radarSensor;
 
@@ -54,7 +62,9 @@ void setup() {
   // Example: You can put static content here that will remain on the display
   scroller.startScrolling();
   wifi_connect();
-//  mqtt_init(&scroller);
+  setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
+  tzset();
+  DateTime.begin(/* timeout param */);
   radarSensor = new LRadar{display};
 }
 

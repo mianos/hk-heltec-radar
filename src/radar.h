@@ -10,8 +10,12 @@ protected:
   float distanceValue;
   float strengthValue;
   String type;
-
+  int silence = 2000;
 public:
+  void set_silence_period(int silence_period) {
+    silence = silence_period;
+  }
+
   void processRadarData(float minStrength = 0.0) {
     static bool motionDetected = false;
     static bool occupancyDetected = false;
@@ -37,7 +41,7 @@ public:
     }
 
     // Checking if there's no motion or occupancy detected for 2 seconds
-    if ((millis() - lastUpdateTime) >= 2000 && detectedPrinted) {
+    if ((millis() - lastUpdateTime) >= silence && detectedPrinted) {
       Cleared();
       detectedPrinted = false;
       motionDetected = false;
