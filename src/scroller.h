@@ -2,10 +2,10 @@
 #include <Adafruit_SSD1306.h>
 #include <LinkedList.h>
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-#define OLED_RESET    16
-#define SSD1306_I2C_ADDRESS 0x3C
+constexpr int SCREEN_WIDTH = 128;
+constexpr int SCREEN_HEIGHT = 64;
+constexpr int OLED_RESET = 16;
+constexpr int SSD1306_I2C_ADDRESS = 0x3C;
 
 class ScrollingText {
 private:
@@ -15,18 +15,14 @@ private:
   Adafruit_SSD1306& display;
   LinkedList<String> textList;
   String text;
-  int textPosition;
-  bool finishedScrolling;
-  char displayBuffer[SCREEN_WIDTH / charWidth + 1];
-  unsigned long lastScrollTime;
+  int textPosition = 0;
+  bool finishedScrolling = false;
+  char displayBuffer[SCREEN_WIDTH / charWidth + 1] = {};
+  unsigned long lastScrollTime = 0;
 
 public:
   ScrollingText(Adafruit_SSD1306& displayInstance) : display(displayInstance) {
-    finishedScrolling = false;
-    lastScrollTime = 0;
-
-    // Initialize the buffer with spaces
-    for (int i = 0; i < SCREEN_WIDTH / charWidth; i++) {
+    for (auto i = 0; i < SCREEN_WIDTH / charWidth; i++) {
       displayBuffer[i] = ' ';
     }
     displayBuffer[SCREEN_WIDTH / charWidth] = '\0'; // Null-terminate the buffer
@@ -38,22 +34,28 @@ public:
   }
 
   void taf(const char *format, ...) {
-      char str[MAX_STRING_SIZE];
-      va_list args;
-      va_start(args, format);
-      vsnprintf(str, MAX_STRING_SIZE, format, args);
-      va_end(args);
-      textList.add(str);
+    char str[MAX_STRING_SIZE];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(str, MAX_STRING_SIZE, format, args);
+    va_end(args);
+    textList.add(str);
   }
 
+  void force() {
+    while (!scroll()) {
+      display.display();
+      delay(10);
+    }
+  }
 
-  void scroll() {
+  bool scroll(bool no_clear=false) {
     if (millis() - lastScrollTime < scrollDelay)
-      return;
+      return false;
 
     if (finishedScrolling) {
       if (textList.size() == 0) {
-        return; // All texts have been displayed
+        return true; // All texts have been displayed
       }
       text = textList.shift();
       textPosition = 0; // Start at the beginning of the text
@@ -101,7 +103,9 @@ public:
     display.print(displayBuffer);
 
     lastScrollTime = millis(); // Update the last scroll time
+    return false;
   }
 };
 
 extern ScrollingText scroller;
+

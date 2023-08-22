@@ -5,7 +5,6 @@
 
 #include "lwifi.h"
 #include "radar.h"
-#include "ld2125.h"
 
 
 #include "bigtext.h"
@@ -21,6 +20,9 @@ BigText bigText{display};
 PowerLine powerLine{display};
 RadarMqtt mqtt{scroller};
 
+
+#if 0
+#include "ld2125.h"
 
 struct LRadar : public LD2125 {
   Adafruit_SSD1306& display;
@@ -44,13 +46,36 @@ struct LRadar : public LD2125 {
     mqtt.mqtt_update_presence(false);
   }
 } *radarSensor;
+#else
+#include "ld2411.h"
+struct LRadar : public LD2411 {
+  Adafruit_SSD1306& display;
 
+  LRadar(Adafruit_SSD1306& displayInstance) : LD2411(), display(displayInstance) {
+    mqtt.add_radar(this);
+  }
 
+  virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) {
+    bigText.displayLargeDistance(distanceValue, 10, 8);
+    powerLine.show(strengthValue / 4);
+    if (entry) {
+      mqtt.mqtt_update_presence(entry, false, distanceValue, strengthValue);
+    } else {
+      mqtt.mqtt_update_presence(entry, true, distanceValue, strengthValue);
+    }
+  }
+  virtual void Cleared() {
+    bigText.displayLargeDistance(0.0, 10, 8);
+    powerLine.show(0);
+    mqtt.mqtt_update_presence(false);
+  }
+} *radarSensor;
+
+#endif
 
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Start");
 
   twi.begin(4, 15); // SDA, SCL
   twi.setClock(1000000L); 
@@ -63,6 +88,8 @@ void setup() {
 
   // Example: You can put static content here that will remain on the display
   scroller.startScrolling();
+  scroller.taf("pres PROG to reset now\n");
+  scroller.force();
   wifi_connect();
   setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
   tzset();
@@ -73,6 +100,7 @@ void setup() {
 
 void loop() {
   scroller.scroll();
+  //radarSensor->mirror();
   radarSensor->processRadarData();
   display.display();
   mqtt.handle();

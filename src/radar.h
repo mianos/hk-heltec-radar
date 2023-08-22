@@ -7,13 +7,20 @@ public:
   virtual String decodeRadarDataFSM() = 0;
 
 protected:
-  float distanceValue;
-  float strengthValue;
+  float distanceValue = 0.0;
+  float strengthValue = 0.0;
   String type;
   int silence = 2000;
 public:
   void set_silence_period(int silence_period) {
     silence = silence_period;
+  }
+
+  void mirror() {
+		if (Serial2.available()) {
+			int incomingByte = Serial2.read();
+			Serial.printf("%02x ", incomingByte);
+		}
   }
 
   void processRadarData(float minStrength = 0.0) {

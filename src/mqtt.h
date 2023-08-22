@@ -10,17 +10,17 @@ struct RadarMqtt {
   WiFiClient espClient;
   PubSubClient client;
   bool report_ranges = false;
-  LD2125 *radar;
+  RadarSensor* radar = nullptr; // Use nullptr instead of 0 for pointer initialization
   static constexpr const char* dname = "radar";
   static constexpr const char* mqtt_server = "mqtt2.mianos.com";
 
-  void callback(char *topic_str, byte *payload, unsigned int length);
+  void callback(char* topic_str, byte* payload, unsigned int length);
   RadarMqtt(ScrollingText& scroller);
-  void add_radar(LD2125 *new_radar);
+  void add_radar(RadarSensor* new_radar);
 
   void reconnect();
   void handle();
 
-  void mqtt_update_presence(bool entry, bool other=false, float distance=0.0, float strengthValue=0.0);
+  void mqtt_update_presence(bool entry, bool other = false, float distance = 0.0f, float strengthValue = 0.0f);
 };
 
