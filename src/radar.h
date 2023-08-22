@@ -28,11 +28,13 @@ public:
     static bool occupancyDetected = false;
     static unsigned long lastUpdateTime = 0;
     static bool detectedPrinted = false;
+    static bool clearedPrinted = false;
 
     String type = decodeRadarDataFSM();
 
-    if (type != "" && strengthValue >= minStrength) {
+    if ((type == "mov" || type == "occ")  && strengthValue >= minStrength) {
       lastUpdateTime = millis(); // Update the time of the last radar data received
+      clearedPrinted = false;
 
       if (type == "mov") {
         motionDetected = true;
@@ -48,11 +50,12 @@ public:
     }
 
     // Checking if there's no motion or occupancy detected for 2 seconds
-    if ((millis() - lastUpdateTime) >= silence && detectedPrinted) {
+    if ((!clearedPrinted && type == "no") || ((millis() - lastUpdateTime) >= silence && detectedPrinted)) {
       Cleared();
       detectedPrinted = false;
       motionDetected = false;
       occupancyDetected = false;
+      clearedPrinted = true;
     }
   }
   virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) = 0;

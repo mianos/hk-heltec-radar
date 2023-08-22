@@ -70,7 +70,7 @@ public:
             } else if (type == 2) {
               return "mov";
             } else {
-              return "";
+              return "no";
             }
           } else {
             state = WAIT_HEADER_1;
