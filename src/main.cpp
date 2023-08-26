@@ -2,6 +2,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <ESPDateTime.h>
+#include "freertos/queue.h"
 
 #include "lwifi.h"
 #include "radar.h"
@@ -73,6 +74,15 @@ struct LRadar : public LD2411 {
 
 #endif
 
+static const int PIN=13;
+static int iseen = 0;
+QueueHandle_t interruptQueue;
+
+void IRAM_ATTR handleInterrupt() {
+	iseen++;
+  int value = digitalRead(PIN);
+  xQueueSendFromISR(interruptQueue, &value, NULL);
+}
 
 void setup() {
   Serial.begin(115200);
@@ -94,13 +104,22 @@ void setup() {
   setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
   tzset();
   DateTime.begin(/* timeout param */);
+
+  interruptQueue = xQueueCreate(10, sizeof(int));
+  pinMode(PIN, INPUT_PULLUP);  // Set pin as input with pullup
+  attachInterrupt(digitalPinToInterrupt(PIN), handleInterrupt, HIGH);
   radarSensor = new LRadar{display};
 }
 
 
 void loop() {
+  auto receivedValue = -1;
+
   scroller.scroll();
   //radarSensor->mirror();
+  if (xQueueReceive(interruptQueue, &receivedValue, 10 / portTICK_PERIOD_MS)) {
+    Serial.printf("seen by interupt\n");
+	}
   radarSensor->processRadarData();
   display.display();
   mqtt.handle();

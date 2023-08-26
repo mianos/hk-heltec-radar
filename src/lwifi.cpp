@@ -4,90 +4,137 @@
 #include <ESPDateTime.h>
 #include <WiFiManager.h>
 #include <ArduinoOTA.h>
+#include <ArduinoJson.h>
+#include <FS.h>
+#include <SPIFFS.h>
 
 #include "scroller.h"
 #include "lwifi.h"
-
-class LcdDebugStream : public Stream {
-private:
-  ScrollingText& _scroller;
-  static const size_t _bufferSize = 128;
-  char _buffer[_bufferSize];
-  size_t _bufferIndex = 0;
-
-  void flushBuffer() {
-    if (_bufferIndex > 0) {
-      _buffer[_bufferIndex] = '\0';
-      _scroller.taf("%s", _buffer);
-      _bufferIndex = 0;
-    }
-  }
-public:
-  LcdDebugStream(ScrollingText& scroller) : _scroller(scroller) {}
-
-  size_t write(uint8_t data) {
-    if (data == '\n') {
-      flushBuffer();
-    } else {
-      _buffer[_bufferIndex++] = data;
-      if (_bufferIndex >= _bufferSize - 1) {
-        flushBuffer();
-      }
-    }
-    return 1;
-  }
-
-  size_t write(const uint8_t *buffer, size_t size) {
-    for (size_t i = 0; i < size; i++) {
-      write(buffer[i]);
-    }
-    return size;
-  }
-
-  void flush() { flushBuffer(); }
-  int available() { return 0; }
-  int read() { return -1; }
-  int peek() { return -1; }
-};
-
+#include "lcd_debug.h"
 
 constexpr int PROG_BUTTON_PIN = 0; // GPIO0
 
 LcdDebugStream lcdDebugStream(scroller);
 WiFiManager wifiManager(lcdDebugStream);
 
+
+// char mqtt_server[64] = "mqtt2.mianos.com"; // Default MQTT server
+bool shouldSaveConfig = false;
+char mqtt_server[40] = "mqtt";
+char mqtt_port[6] = "1883";
+char mqtt_topic[40] = "presence/radar";
+char sensor_name[40] = "sensorA";
+
+
+// Saves custom parameters to /config.json on SPIFFS
+void save_settings() {
+  DynamicJsonDocument doc(1024);
+
+  doc["mqtt_server"] = mqtt_server;
+  doc["mqtt_port"] = mqtt_port;
+  doc["mqtt_topic"] = mqtt_topic;
+  doc["sensor_name"] = sensor_name;
+
+  File file = SPIFFS.open("/config.json", "w");
+  if (!file) {
+    scroller.taf("Failed to open config file for writing\n");
+    scroller.force();
+    return;
+  }
+  if (serializeJson(doc, file) == 0) {
+    scroller.taf("Failed to write to file\n");
+    scroller.force();
+  }
+  file.close();
+}
+
+// Loads custom parameters from /config.json on SPIFFS
+void load_settings() {
+    if (SPIFFS.exists("/config.json")) {
+        File configFile = SPIFFS.open("/config.json", "r");
+        
+        if (configFile) {
+            size_t size = configFile.size();
+            std::unique_ptr<char[]> buf(new char[size]);
+            configFile.readBytes(buf.get(), size);
+            configFile.close();
+
+						DynamicJsonDocument doc(1024);
+						DeserializationError error = deserializeJson(doc, buf.get());
+						if (error) {
+							scroller.taf("Failed to parse config file\n");
+              scroller.force();
+							return;
+						}
+						strlcpy(mqtt_server, doc["mqtt_server"], sizeof(mqtt_server));
+						strlcpy(mqtt_port, doc["mqtt_port"], sizeof(mqtt_port));
+						strlcpy(mqtt_topic, doc["mqtt_topic"], sizeof(mqtt_topic));
+						strlcpy(sensor_name, doc["sensor_name"], sizeof(sensor_name));
+        }
+    }
+}
+
+
 void configModeCallback (WiFiManager *myWiFiManager) {
   scroller.taf("Entered config mode\n");
   scroller.taf("AP IP %s\n", WiFi.softAPIP().toString().c_str());
   scroller.taf("portal ssid %\ns", myWiFiManager->getConfigPortalSSID().c_str());
+  scroller.force();
+}
+// WiFiManager requiring config save callback
+void saveConfigCallback () {
+    shouldSaveConfig = true;
 }
 
-char mqtt_server[64] = "mqtt2.mianos.com"; // Default MQTT server
 
 void wifi_connect() {
-  wifiManager.setAPCallback(configModeCallback);
+  if (!SPIFFS.begin(true)) {
+      scroller.taf("An error has occurred while mounting SPIFFS\n");
+      scroller.force();
+      return;
+    }
+    load_settings();
+    wifiManager.setAPCallback(configModeCallback);
 
-  WiFiManagerParameter custom_mqtt_server("server", "MQTT Server", mqtt_server, 40);
-  wifiManager.addParameter(&custom_mqtt_server);
+    wifiManager.setSaveConfigCallback(saveConfigCallback);
 
-  pinMode(PROG_BUTTON_PIN, INPUT_PULLUP); // Set the PROG button as an input with pull-up resistor
-  // Check if the PROG button is pressed
-  if (digitalRead(PROG_BUTTON_PIN) == LOW) {
-    wifiManager.resetSettings();
-    ESP.restart(); // Restart to apply changes
-  }
+    scroller.taf("press and hold prog now to reset\n");
+    scroller.force();
+    delay(1000);
+    pinMode(PROG_BUTTON_PIN, INPUT_PULLUP); // Set the PROG button as an input with pull-up resistor
+    // Check if the PROG button is pressed
+    if (digitalRead(PROG_BUTTON_PIN) == LOW) {
+      wifiManager.resetSettings();
+      scroller.taf("Resetting\n");
+      scroller.force();
+      ESP.restart(); // Restart to apply changes
+    }
 
-  auto res = wifiManager.autoConnect("presencedetector");
-  if (!res) {
-    scroller.taf("Wifi failed to connect\n");
-  } else {
-    scroller.taf("Connected\n");
-  }
-  DateTime.begin(/* timeout param */);
-  if (!DateTime.isTimeValid()) {
-    scroller.taf("Failed to get time from server\n");
-  } else {
-    scroller.taf("Datetime set\n");
-  }
+    WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 40);
+    wifiManager.addParameter(&custom_mqtt_server);
+    WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
+    wifiManager.addParameter(&custom_mqtt_port);
+    WiFiManagerParameter custom_mqtt_topic("topic", "mqtt topic", mqtt_topic, 40);
+    wifiManager.addParameter(&custom_mqtt_topic);
+    WiFiManagerParameter custom_sensor_name("sensor_name", "sensor name", sensor_name, 40);
+    wifiManager.addParameter(&custom_sensor_name);
+        
+    // try to connect or fallback to ESP+ChipID AP config mode.
+    if (!wifiManager.autoConnect()) {
+        // reset and try again, or maybe put it to deep sleep
+        scroller.taf("restarting\n");
+        scroller.force();
+        ESP.restart();
+        delay(1000);
+    }
+    
+    strcpy(mqtt_server, custom_mqtt_server.getValue());
+    strcpy(mqtt_port, custom_mqtt_port.getValue());
+    strcpy(mqtt_topic, custom_mqtt_topic.getValue());
+    strcpy(sensor_name, custom_sensor_name.getValue());
+    
+    // if we went through config, we should save our changes.
+    if (shouldSaveConfig)
+        save_settings();
 }
 
