@@ -121,18 +121,11 @@ public:
         case WAIT_TRAILER_F5:
           if (currentByte == 0xF5) {
             // Done reading frame, process data
-            Serial.print("Target Type: ");
-            Serial.println(targetType);
-            Serial.print("Moving Distance: ");
-            Serial.println(movingDistance);
-            Serial.print("Moving Energy: ");
-            Serial.println(movingEnergy);
-            Serial.print("Stationary Distance: ");
-            Serial.println(stationaryDistance);
-            Serial.print("Stationary Energy: ");
-            Serial.println(stationaryEnergy);
-            Serial.print("Detection Distance: ");
-            Serial.println(detectionDistance);
+            Serial.printf("-------------\n");
+            Serial.printf("Target Type: %d\n", targetType);
+            Serial.printf("Moving Distance: %d energy %d\n", movingDistance, movingEnergy);
+            Serial.printf("Stationary Distance: %d Energy %d\n", stationaryDistance, stationaryEnergy);
+            Serial.printf("Detection Distance: %d\n", detectionDistance);
           }
           break;
       }
