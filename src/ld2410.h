@@ -120,12 +120,39 @@ public:
           break;
         case WAIT_TRAILER_F5:
           if (currentByte == 0xF5) {
-            // Done reading frame, process data
-            Serial.printf("-------------\n");
-            Serial.printf("Target Type: %d\n", targetType);
-            Serial.printf("Moving Distance: %d energy %d\n", movingDistance, movingEnergy);
-            Serial.printf("Stationary Distance: %d Energy %d\n", stationaryDistance, stationaryEnergy);
-            Serial.printf("Detection Distance: %d\n", detectionDistance);
+#if 0
+            if (targetType) {
+              Serial.printf("Target Type: %d\n", targetType);
+            }
+            if (movingEnergy) {
+              Serial.printf("Moving Distance: %d energy %d\n", movingDistance, movingEnergy);
+            } 
+            if (stationaryEnergy) {
+              Serial.printf("Stationary Distance: %d Energy %d\n", stationaryDistance, stationaryEnergy);
+            }
+            if (detectionDistance) {
+              Serial.printf("Detection Distance: %d\n", detectionDistance);
+            }
+#endif
+            switch (targetType) {
+            case 0:
+              strengthValue = 0.0;
+              distanceValue = 0.0;
+              strengthValue =0.0;
+              return "";
+            case 1:
+              distanceValue = static_cast<float>(movingDistance) / 100.0;
+              strengthValue = static_cast<float>(movingEnergy) / 100.0;
+              return "mov"; 
+            case 2:
+              distanceValue = static_cast<float>(stationaryDistance) / 100.0;
+              strengthValue = static_cast<float>(stationaryEnergy) / 100.0;
+              return "occ";
+            case 3: // Mov and occ
+              distanceValue = static_cast<float>(movingDistance) / 100.0;
+              strengthValue = static_cast<float>(movingEnergy) / 100.0;
+              return "mov";
+            }
           }
           break;
       }
