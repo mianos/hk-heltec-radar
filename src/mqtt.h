@@ -16,7 +16,6 @@ struct RadarMqtt {
 
   void callback(char* topic_str, byte* payload, unsigned int length);
   RadarMqtt(ScrollingText& scroller);
-  void add_radar(RadarSensor* new_radar);
 
   void reconnect();
   void handle();

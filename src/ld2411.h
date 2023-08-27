@@ -1,4 +1,5 @@
 #pragma once
+#include "radar.h"
 
 class LD2411 : public RadarSensor {
 private:
@@ -17,7 +18,7 @@ private:
   uint16_t distance = 0;
 
 public:
-  LD2411(int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor() {
+  LD2411(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
     Serial2.begin(256000, SERIAL_8N1, RxPin, TxPin);
   }
 

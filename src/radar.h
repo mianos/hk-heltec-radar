@@ -1,8 +1,15 @@
 #pragma once
 
-class RadarSensor {
+class EventProc {
 public:
-  RadarSensor() : distanceValue(0.0), strengthValue(0.0) {}
+  virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) = 0;
+  virtual void Cleared() = 0;
+};
+
+class RadarSensor {
+  EventProc* ep;
+public:
+  RadarSensor(EventProc* ep) : ep(ep), distanceValue(0.0), strengthValue(0.0) {}
 
   virtual String decodeRadarDataFSM() = 0;
 
@@ -46,19 +53,17 @@ public:
         entry = true;
         detectedPrinted = true;
       }
-      Detected(type, distanceValue, strengthValue, entry);
+      ep->Detected(type, distanceValue, strengthValue, entry);
     }
 
     // Checking if there's no motion or occupancy detected for 2 seconds
     if ((!clearedPrinted && type == "no") || ((millis() - lastUpdateTime) >= silence && detectedPrinted)) {
-      Cleared();
+      ep->Cleared();
       detectedPrinted = false;
       motionDetected = false;
       occupancyDetected = false;
       clearedPrinted = true;
     }
   }
-  virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) = 0;
-  virtual void Cleared() = 0;
 };
 

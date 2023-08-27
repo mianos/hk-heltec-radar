@@ -12,6 +12,7 @@
 #include "scroller.h"
 #include "powerline.h"
 #include "mqtt.h"
+#include "ld2411.h"
 
 TwoWire twi = TwoWire(1); // create our own TwoWire instance
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &twi, OLED_RESET);
@@ -22,16 +23,8 @@ PowerLine powerLine{display};
 RadarMqtt mqtt{scroller};
 
 
-#if 0
-#include "ld2125.h"
-
-struct LRadar : public LD2125 {
-  Adafruit_SSD1306& display;
-
-  LRadar(Adafruit_SSD1306& displayInstance) : LD2125(), display(displayInstance) {
-    mqtt.add_radar(this);
-  }
-
+class LocalEP : public EventProc {
+public:
   virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) {
     bigText.displayLargeDistance(distanceValue, 10, 8);
     powerLine.show(strengthValue / 4);
@@ -46,33 +39,10 @@ struct LRadar : public LD2125 {
     powerLine.show(0);
     mqtt.mqtt_update_presence(false);
   }
-} *radarSensor;
-#else
-#include "ld2411.h"
-struct LRadar : public LD2411 {
-  Adafruit_SSD1306& display;
+} lep;
 
-  LRadar(Adafruit_SSD1306& displayInstance) : LD2411(), display(displayInstance) {
-    mqtt.add_radar(this);
-  }
+LD2411 *radarSensor;
 
-  virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) {
-    bigText.displayLargeDistance(distanceValue, 10, 8);
-    powerLine.show(strengthValue / 4);
-    if (entry) {
-      mqtt.mqtt_update_presence(entry, false, distanceValue, strengthValue);
-    } else {
-      mqtt.mqtt_update_presence(entry, true, distanceValue, strengthValue);
-    }
-  }
-  virtual void Cleared() {
-    bigText.displayLargeDistance(0.0, 10, 8);
-    powerLine.show(0);
-    mqtt.mqtt_update_presence(false);
-  }
-} *radarSensor;
-
-#endif
 
 static const int PIN=13;
 static int iseen = 0;
@@ -83,6 +53,7 @@ void IRAM_ATTR handleInterrupt() {
   int value = digitalRead(PIN);
   xQueueSendFromISR(interruptQueue, &value, NULL);
 }
+
 
 void setup() {
   Serial.begin(115200);
@@ -98,8 +69,6 @@ void setup() {
 
   // Example: You can put static content here that will remain on the display
   scroller.startScrolling();
-  scroller.taf("pres PROG to reset now\n");
-  scroller.force();
   wifi_connect();
   setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
   tzset();
@@ -108,7 +77,7 @@ void setup() {
   interruptQueue = xQueueCreate(10, sizeof(int));
   pinMode(PIN, INPUT_PULLUP);  // Set pin as input with pullup
   attachInterrupt(digitalPinToInterrupt(PIN), handleInterrupt, HIGH);
-  radarSensor = new LRadar{display};
+  radarSensor = new LD2411{&lep};
 }
 
 

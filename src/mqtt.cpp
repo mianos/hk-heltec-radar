@@ -4,7 +4,6 @@
 #include <WiFi.h>
 #include <StringSplitter.h>
 
-#include "radar.h"
 #include "mqtt.h"
 
 void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
@@ -42,9 +41,6 @@ RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scro
   });
 }
 
-void RadarMqtt::add_radar(RadarSensor* new_radar) {
-  radar = new_radar;
-}
 
 void RadarMqtt::reconnect() {
   while (!client.connected()) {
