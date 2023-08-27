@@ -41,7 +41,7 @@ public:
   }
 } lep;
 
-LD2411 *radarSensor;
+RadarSensor *radarSensor;
 
 
 static const int PIN=13;
@@ -77,7 +77,11 @@ void setup() {
   interruptQueue = xQueueCreate(10, sizeof(int));
   pinMode(PIN, INPUT_PULLUP);  // Set pin as input with pullup
   attachInterrupt(digitalPinToInterrupt(PIN), handleInterrupt, HIGH);
+#if 0
   radarSensor = new LD2411{&lep};
+#else
+  radarSensor = new LD2125{&lep};
+#endif
 }
 
 

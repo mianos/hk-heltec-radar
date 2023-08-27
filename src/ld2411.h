@@ -1,31 +1,31 @@
+
 #pragma once
 #include "radar.h"
 
 class LD2411 : public RadarSensor {
-private:
-  enum State {
-    WAIT_HEADER_1,
-    WAIT_HEADER_2,
-    READ_TYPE,
-    READ_DISTANCE_LSB,
-    READ_DISTANCE_MSB,
-    READ_END_OF_FRAME_1,
-    READ_END_OF_FRAME_2
-  };
-
-  State state = WAIT_HEADER_1;
-  uint8_t type = 0;
-  uint16_t distance = 0;
-
 public:
   LD2411(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
     Serial2.begin(256000, SERIAL_8N1, RxPin, TxPin);
   }
 
-  virtual String decodeRadarDataFSM() {
+  virtual String decodeRadarDataFSM() override {
+    enum State {
+      WAIT_HEADER_1,
+      WAIT_HEADER_2,
+      READ_TYPE,
+      READ_DISTANCE_LSB,
+      READ_DISTANCE_MSB,
+      READ_END_OF_FRAME_1,
+      READ_END_OF_FRAME_2
+    };
+    
+    static State state = WAIT_HEADER_1;
+    uint8_t type = 0;
+    uint16_t distance = 0;
+
     while (Serial2.available()) {
       uint8_t currentByte = Serial2.read();
-      //Serial.printf("%2x ", currentByte);
+      
       switch (state) {
         case WAIT_HEADER_1:
           if (currentByte == 0xAA) {
@@ -82,4 +82,3 @@ public:
     return "";
   }
 };
-
