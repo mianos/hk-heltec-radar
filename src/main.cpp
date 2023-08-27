@@ -13,6 +13,7 @@
 #include "powerline.h"
 #include "mqtt.h"
 #include "ld2411.h"
+#include "ld2410.h"
 
 TwoWire twi = TwoWire(1); // create our own TwoWire instance
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &twi, OLED_RESET);
@@ -79,8 +80,9 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(PIN), handleInterrupt, HIGH);
 #if 0
   radarSensor = new LD2411{&lep};
-#else
   radarSensor = new LD2125{&lep};
+#else
+  radarSensor = new LD2410{&lep};
 #endif
 }
 
