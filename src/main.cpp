@@ -23,12 +23,11 @@ BigText bigText{display};
 PowerLine powerLine{display};
 RadarMqtt mqtt{scroller};
 
-
 class LocalEP : public EventProc {
 public:
   virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) {
     bigText.displayLargeDistance(distanceValue, 10, 8);
-    powerLine.show(strengthValue / 4);
+    powerLine.show(strengthValue);
     if (entry) {
       mqtt.mqtt_update_presence(entry, false, distanceValue, strengthValue);
     } else {
@@ -43,7 +42,6 @@ public:
 } lep;
 
 RadarSensor *radarSensor;
-
 
 static const int PIN=13;
 static int iseen = 0;
@@ -70,20 +68,26 @@ void setup() {
 
   // Example: You can put static content here that will remain on the display
   scroller.startScrolling();
-  wifi_connect();
-  setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
-  tzset();
-  DateTime.begin(/* timeout param */);
 
   interruptQueue = xQueueCreate(10, sizeof(int));
   pinMode(PIN, INPUT_PULLUP);  // Set pin as input with pullup
   attachInterrupt(digitalPinToInterrupt(PIN), handleInterrupt, HIGH);
-#if 0
-  radarSensor = new LD2411{&lep};
-  radarSensor = new LD2125{&lep};
-#else
-  radarSensor = new LD2410{&lep};
-#endif
+  if (!strcmp(radar_module, "ld2411")) {
+    radarSensor = new LD2411{&lep};
+  } else if (!strcmp(radar_module, "ld1125")) {
+    radarSensor = new LD1125{&lep};
+  } else if (!strcmp(radar_module, "ld2410")) {
+    radarSensor = new LD2410{&lep};
+  } else {
+    scroller.taf("Undefined radar module type '%s'\n", radar_module);
+    Serial.printf("Undefined radar module type '%s'\n", radar_module);
+    // Using any one as not to have null calls.
+    radarSensor = new LD2410{&lep};
+  }
+  wifi_connect();
+  setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
+  tzset();
+  DateTime.begin(/* timeout param */);
 }
 
 
@@ -98,5 +102,5 @@ void loop() {
   radarSensor->processRadarData();
   display.display();
   mqtt.handle();
-  delay(10);
+  delay(5);
 }

@@ -24,6 +24,7 @@ char mqtt_server[40] = "mqtt";
 char mqtt_port[6] = "1883";
 char mqtt_topic[40] = "presence/radar";
 char sensor_name[40] = "sensorA";
+char radar_module[30] = "undefined";
 
 
 // Saves custom parameters to /config.json on SPIFFS
@@ -34,6 +35,7 @@ void save_settings() {
   doc["mqtt_port"] = mqtt_port;
   doc["mqtt_topic"] = mqtt_topic;
   doc["sensor_name"] = sensor_name;
+  doc["radar_module"] = radar_module;
 
   File file = SPIFFS.open("/config.json", "w");
   if (!file) {
@@ -70,6 +72,7 @@ void load_settings() {
 						strlcpy(mqtt_port, doc["mqtt_port"], sizeof(mqtt_port));
 						strlcpy(mqtt_topic, doc["mqtt_topic"], sizeof(mqtt_topic));
 						strlcpy(sensor_name, doc["sensor_name"], sizeof(sensor_name));
+						strlcpy(radar_module, doc["radar_module"], sizeof(radar_module));
         }
     }
 }
@@ -118,6 +121,8 @@ void wifi_connect() {
     wifiManager.addParameter(&custom_mqtt_topic);
     WiFiManagerParameter custom_sensor_name("sensor_name", "sensor name", sensor_name, 40);
     wifiManager.addParameter(&custom_sensor_name);
+    WiFiManagerParameter custom_radar_module("radar_module", "radar module", radar_module, 30);
+    wifiManager.addParameter(&custom_radar_module);
         
     // try to connect or fallback to ESP+ChipID AP config mode.
     if (!wifiManager.autoConnect()) {

@@ -140,17 +140,14 @@ public:
               distanceValue = 0.0;
               strengthValue =0.0;
               return "";
-            case 1:
-              distanceValue = static_cast<float>(movingDistance) / 100.0;
-              strengthValue = static_cast<float>(movingEnergy) / 100.0;
-              return "mov"; 
             case 2:
               distanceValue = static_cast<float>(stationaryDistance) / 100.0;
-              strengthValue = static_cast<float>(stationaryEnergy) / 100.0;
+              strengthValue = static_cast<float>(stationaryEnergy);
               return "occ";
+            case 1: // mov
             case 3: // Mov and occ
               distanceValue = static_cast<float>(movingDistance) / 100.0;
-              strengthValue = static_cast<float>(movingEnergy) / 100.0;
+              strengthValue = static_cast<float>(movingEnergy);
               return "mov";
             }
           }

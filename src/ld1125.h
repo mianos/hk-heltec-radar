@@ -1,9 +1,9 @@
 #pragma once
 #include "radar.h"
 
-class LD2125 : public RadarSensor {
+class LD1125 : public RadarSensor {
 public:
-  LD2125(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
+  LD1125(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
     Serial2.begin(115200, SERIAL_8N1, RxPin, TxPin);
     delay(50);
     Serial2.print("test_mode=1\r\n");
