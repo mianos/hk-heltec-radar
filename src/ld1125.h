@@ -11,10 +11,8 @@ public:
           break;
         }
         char c = (char)Serial2.read();
-        Serial.printf("%c", c);
       }
       Serial2.printf("test_mode=1\r\n");
-      Serial.printf("sending\n");
     }
   }
 
@@ -26,8 +24,15 @@ public:
       STR
     } state = WAIT;
     static String distance, strength;
+    const unsigned long timeoutDuration = 5000; 
 
+    unsigned long loopStartTime = millis();
     while (Serial2.available()) {
+      if (millis() - loopStartTime >= timeoutDuration) {
+        Serial.println("Timeout occurred! Exiting the loop.");
+        break; // Exit the loop
+      }
+
       char c = (char)Serial2.read();
       switch (state) {
         case WAIT:

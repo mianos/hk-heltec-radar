@@ -82,9 +82,11 @@ void setup() {
   }
 
   wifi_connect();
-  setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
-  tzset();
+  DateTime.setTimeZone("AEST-10AEDT,M10.1.0,M4.1.0/3");
   DateTime.begin(/* timeout param */);
+  if (!DateTime.isTimeValid()) {
+    scroller.taf("Failed to get time from server\n");
+  }
   network_up = true;
 }
 
