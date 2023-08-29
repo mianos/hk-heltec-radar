@@ -5,8 +5,16 @@ class LD1125 : public RadarSensor {
 public:
   LD1125(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
     Serial2.begin(115200, SERIAL_8N1, RxPin, TxPin);
-    delay(50);
-    Serial2.print("test_mode=1\r\n");
+    for (auto kk = 0; kk < 5; kk++) {
+      for (auto ii = 0; ii < 10000; ii++) {
+        if (!Serial2.available()) {
+          break;
+        }
+        char c = (char)Serial2.read();
+        Serial.printf("%c", c);
+      }
+      Serial2.printf("test_mode=1\r\n");
+    }
   }
 
   virtual String decodeRadarDataFSM() {
@@ -48,7 +56,7 @@ public:
         case STR:
           if (c == '\n') {
             if (strength != "") {
-              strengthValue = strength.toFloat(); // Decode strength here
+              strengthValue = strength.toFloat() / 10.0; // Decode strength here
               strength = "";
             }
             String retType = type.substring(0, type.length() - 1); // Removing the comma

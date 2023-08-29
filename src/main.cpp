@@ -14,6 +14,7 @@
 #include "mqtt.h"
 #include "ld2411.h"
 #include "ld2410.h"
+#include "ld1125.h"
 
 TwoWire twi = TwoWire(1); // create our own TwoWire instance
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &twi, OLED_RESET);
@@ -82,7 +83,7 @@ void setup() {
     scroller.taf("Undefined radar module type '%s'\n", radar_module);
     Serial.printf("Undefined radar module type '%s'\n", radar_module);
     // Using any one as not to have null calls.
-    radarSensor = new LD2410{&lep};
+    radarSensor = new LD1125{&lep};
   }
   wifi_connect();
   setenv("TZ", "AEST-10AEDT,M10.1.0,M4.1.0/3", 1);
