@@ -108,4 +108,4 @@ public:
 };
 
 extern ScrollingText scroller;
-
+extern void radar_minimal();

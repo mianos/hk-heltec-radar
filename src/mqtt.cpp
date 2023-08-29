@@ -58,8 +58,8 @@ void RadarMqtt::reconnect() {
       serializeJson(doc, output);
       client.publish(status_topic.c_str(), output.c_str());
     } else {
-      scroller.taf("failed, rc=%d, sleeping 5 seconds\n", client.state());
-      delay(5000);
+      scroller.taf("failed, rc=%d, sleeping seconds\n", client.state());
+      radar_minimal();
     }
   }
 }

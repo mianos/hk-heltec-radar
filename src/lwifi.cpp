@@ -82,7 +82,7 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   scroller.taf("Entered config mode\n");
   scroller.taf("AP IP %s\n", WiFi.softAPIP().toString().c_str());
   scroller.taf("portal ssid %\ns", myWiFiManager->getConfigPortalSSID().c_str());
-  scroller.force();
+  radar_minimal();
 }
 // WiFiManager requiring config save callback
 void saveConfigCallback () {
@@ -102,14 +102,13 @@ void wifi_connect() {
     wifiManager.setSaveConfigCallback(saveConfigCallback);
 
     scroller.taf("press and hold prog now to reset\n");
-    scroller.force();
-    delay(1000);
+    radar_minimal();
     pinMode(PROG_BUTTON_PIN, INPUT_PULLUP); // Set the PROG button as an input with pull-up resistor
     // Check if the PROG button is pressed
     if (digitalRead(PROG_BUTTON_PIN) == LOW) {
       wifiManager.resetSettings();
       scroller.taf("Resetting\n");
-      scroller.force();
+      radar_minimal();
       ESP.restart(); // Restart to apply changes
     }
 
@@ -128,9 +127,8 @@ void wifi_connect() {
     if (!wifiManager.autoConnect()) {
         // reset and try again, or maybe put it to deep sleep
         scroller.taf("restarting\n");
-        scroller.force();
+        radar_minimal();
         ESP.restart();
-        delay(1000);
     }
     
     strcpy(mqtt_server, custom_mqtt_server.getValue());

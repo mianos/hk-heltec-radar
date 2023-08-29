@@ -14,6 +14,7 @@ public:
         Serial.printf("%c", c);
       }
       Serial2.printf("test_mode=1\r\n");
+      Serial.printf("sending\n");
     }
   }
 
