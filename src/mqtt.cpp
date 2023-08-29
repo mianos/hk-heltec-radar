@@ -5,6 +5,7 @@
 #include <StringSplitter.h>
 
 #include "mqtt.h"
+#include "lwifi.h"
 
 void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
   auto topic = String(topic_str);
@@ -45,15 +46,15 @@ RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scro
 void RadarMqtt::reconnect() {
   while (!client.connected()) {
     scroller.taf("Attempting MQTT connection...\n");
-    String clientId = String(dname) + '-' + String(random(0xffff), HEX);
+    String clientId = String(sensor_name) + '-' + String(random(0xffff), HEX);
     if (client.connect(clientId.c_str())) {
-      String cmnd_topic = String("cmnd/") + dname + "/#";
+      String cmnd_topic = String("cmnd/") + sensor_name + "/#";
       client.subscribe(cmnd_topic.c_str());
       scroller.taf("mqtt connected\n");
       StaticJsonDocument<200> doc;
       doc["version"] = 3;
       doc["time"] = DateTime.toISOString();
-      String status_topic = "tele/" + String(dname) + "/init";
+      String status_topic = "tele/" + String(sensor_name) + "/init";
       String output;
       serializeJson(doc, output);
       client.publish(status_topic.c_str(), output.c_str());
@@ -71,6 +72,7 @@ void RadarMqtt::handle() {
   client.loop();
 }
 
+
 void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, float strengthValue) {
   if (!client.connected()) {
     reconnect();
@@ -78,8 +80,13 @@ void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, flo
   if (other && !report_ranges) {
     return;
   }
+  unsigned long currentTime = millis();
+  if (currentTime - lastTimeCalled < interval) {
+    return;
+  }
+
   StaticJsonDocument<200> doc;
-  doc["entry"] = entry;
+  doc["entry"] = entry || other;
   if (distance != 0.0) {
     doc["distance"] = (int)(distance * 100.0 + 0.5) / 100.0;
   }
@@ -87,9 +94,10 @@ void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, flo
     doc["strength"] = (int)(strengthValue * 10.0 + 0.5) / 10.0;
   }
   doc["time"] = DateTime.toISOString();
-  String status_topic = "tele/" + String(dname) + "/presence";
+  String status_topic = "tele/" + String(sensor_name) + "/presence";
   String output;
   serializeJson(doc, output);
   client.publish(status_topic.c_str(), output.c_str());
+  lastTimeCalled = currentTime;
 }
 

@@ -23,7 +23,7 @@ bool shouldSaveConfig = false;
 char mqtt_server[40] = "mqtt";
 char mqtt_port[6] = "1883";
 char mqtt_topic[40] = "presence/radar";
-char sensor_name[40] = "sensorA";
+char sensor_name[40] = "radar";
 char radar_module[30] = "undefined";
 
 
