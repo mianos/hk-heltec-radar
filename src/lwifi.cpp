@@ -52,6 +52,11 @@ void save_settings() {
 
 // Loads custom parameters from /config.json on SPIFFS
 void load_settings() {
+  if (!SPIFFS.begin(true)) {
+      scroller.taf("Failed to initialise SPIFFS\n");
+      scroller.force();
+      return;
+    }
     if (SPIFFS.exists("/config.json")) {
         File configFile = SPIFFS.open("/config.json", "r");
         
@@ -79,10 +84,9 @@ void load_settings() {
 
 
 void configModeCallback (WiFiManager *myWiFiManager) {
-  scroller.taf("Entered config mode\n");
-  scroller.taf("AP IP %s\n", WiFi.softAPIP().toString().c_str());
-  scroller.taf("portal ssid %\ns", myWiFiManager->getConfigPortalSSID().c_str());
-  radar_minimal();
+  scroller.taf("Config mode AP IP %s portal ssid %s \n", WiFi.softAPIP().toString().c_str(),
+                                                         myWiFiManager->getConfigPortalSSID().c_str());
+  scroller.force();
 }
 // WiFiManager requiring config save callback
 void saveConfigCallback () {
@@ -91,24 +95,18 @@ void saveConfigCallback () {
 
 
 void wifi_connect() {
-  if (!SPIFFS.begin(true)) {
-      scroller.taf("An error has occurred while mounting SPIFFS\n");
-      scroller.force();
-      return;
-    }
-    load_settings();
     wifiManager.setAPCallback(configModeCallback);
 
     wifiManager.setSaveConfigCallback(saveConfigCallback);
 
-    scroller.taf("press and hold prog now to reset\n");
-    radar_minimal();
+    scroller.taf("press and hold prog now to reset .... \n");
+    scroller.force();
     pinMode(PROG_BUTTON_PIN, INPUT_PULLUP); // Set the PROG button as an input with pull-up resistor
     // Check if the PROG button is pressed
     if (digitalRead(PROG_BUTTON_PIN) == LOW) {
       wifiManager.resetSettings();
       scroller.taf("Resetting\n");
-      radar_minimal();
+      scroller.force();
       ESP.restart(); // Restart to apply changes
     }
 
@@ -126,8 +124,8 @@ void wifi_connect() {
     // try to connect or fallback to ESP+ChipID AP config mode.
     if (!wifiManager.autoConnect()) {
         // reset and try again, or maybe put it to deep sleep
-        scroller.taf("restarting\n");
-        radar_minimal();
+        scroller.taf("restarting 2nd time\n");
+        scroller.force();
         ESP.restart();
     }
     
@@ -135,6 +133,7 @@ void wifi_connect() {
     strcpy(mqtt_port, custom_mqtt_port.getValue());
     strcpy(mqtt_topic, custom_mqtt_topic.getValue());
     strcpy(sensor_name, custom_sensor_name.getValue());
+    strcpy(radar_module, custom_radar_module.getValue());
     
     // if we went through config, we should save our changes.
     if (shouldSaveConfig)

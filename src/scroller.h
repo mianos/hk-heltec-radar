@@ -45,7 +45,7 @@ public:
   void force() {
     while (!scroll()) {
       display.display();
-      delay(5);
+//      delay(5);
     }
   }
 

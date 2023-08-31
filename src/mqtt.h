@@ -20,7 +20,7 @@ struct RadarMqtt {
   void callback(char* topic_str, byte* payload, unsigned int length);
   RadarMqtt(ScrollingText& scroller);
 
-  void reconnect();
+  bool reconnect();
   void handle();
 
   void mqtt_update_presence(bool entry, bool other = false, float distance = 0.0f, float strengthValue = 0.0f);

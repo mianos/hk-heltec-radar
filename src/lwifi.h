@@ -1,5 +1,6 @@
 #pragma once
 extern void wifi_connect();
+extern void load_settings();
 
 
 extern char mqtt_server[40];

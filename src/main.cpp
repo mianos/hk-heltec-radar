@@ -61,7 +61,7 @@ void setup() {
 	}
 	display.clearDisplay();
   display.display();
-
+  load_settings();
   // Example: You can put static content here that will remain on the display
   scroller.startScrolling();
 
@@ -78,7 +78,7 @@ void setup() {
     scroller.taf("Undefined radar module type '%s'\n", radar_module);
     Serial.printf("Undefined radar module type '%s' using LD1125\n", radar_module);
     // Using any one as not to have null calls.
-    radarSensor = new LD1125{&lep};
+    radarSensor = new LD2411{&lep};
   }
 
   wifi_connect();
@@ -90,23 +90,12 @@ void setup() {
   network_up = true;
 }
 
-void radar_display() {
-  radarSensor->processRadarData();
-  display.display();
-}
-
-void radar_minimal() {
-  while (!scroller.scroll()) {
-    radar_display();
-    delay(5);
-  }
-}
-
 void loop() {
-  auto receivedValue = -1;
-
-  radar_display();
+  if (radarSensor) {
+    radarSensor->processRadarData();
+  }
   scroller.scroll();
   mqtt.handle();
-  delay(5);
+  display.display();
+  delay(1);
 }

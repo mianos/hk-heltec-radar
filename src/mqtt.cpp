@@ -43,31 +43,33 @@ RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scro
 }
 
 
-void RadarMqtt::reconnect() {
-  while (!client.connected()) {
-    scroller.taf("Attempting MQTT connection...\n");
-    String clientId = String(sensor_name) + '-' + String(random(0xffff), HEX);
-    if (client.connect(clientId.c_str())) {
-      String cmnd_topic = String("cmnd/") + sensor_name + "/#";
-      client.subscribe(cmnd_topic.c_str());
-      scroller.taf("mqtt connected\n");
-      StaticJsonDocument<200> doc;
-      doc["version"] = 3;
-      doc["time"] = DateTime.toISOString();
-      String status_topic = "tele/" + String(sensor_name) + "/init";
-      String output;
-      serializeJson(doc, output);
-      client.publish(status_topic.c_str(), output.c_str());
-    } else {
-      scroller.taf("failed, rc=%d, sleeping seconds\n", client.state());
-      radar_minimal();
-    }
+bool RadarMqtt::reconnect() {
+  scroller.taf("Attempting MQTT connection...\n");
+  String clientId = String(sensor_name) + '-' + String(random(0xffff), HEX);
+  if (client.connect(clientId.c_str())) {
+    String cmnd_topic = String("cmnd/") + sensor_name + "/#";
+    client.subscribe(cmnd_topic.c_str());
+    scroller.taf("mqtt connected\n");
+    StaticJsonDocument<200> doc;
+    doc["version"] = 3;
+    doc["time"] = DateTime.toISOString();
+    String status_topic = "tele/" + String(sensor_name) + "/init";
+    String output;
+    serializeJson(doc, output);
+    client.publish(status_topic.c_str(), output.c_str());
+    return true;
+  } else {
+    scroller.taf("failed to connect to %s\n", mqtt_server);
+    scroller.force();
+    return false;
   }
 }
 
 void RadarMqtt::handle() {
   if (!client.connected()) {
-    reconnect();
+    if (!reconnect()) {
+      return;
+    }
   }
   client.loop();
 }
@@ -75,7 +77,9 @@ void RadarMqtt::handle() {
 
 void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, float strengthValue) {
   if (!client.connected()) {
-    reconnect();
+    if (!reconnect()) {
+      return;
+    }
   }
   if (other && !report_ranges) {
     return;
