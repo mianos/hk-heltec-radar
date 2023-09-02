@@ -15,7 +15,14 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
     scroller.taf("Item count less than 3 %d '%s'\n", itemCount, topic_str);
     return;
   }
-
+#if 0
+  for (int i = 0; i < itemCount; i++) {
+    String item = splitter.getItemAtIndex(i);
+    Serial.println("Item @ index " + String(i) + ": " + String(item));
+  }
+  Serial.printf("command '%s'\n", splitter.getItemAtIndex(itemCount - 1).c_str());
+#endif
+  
   if (splitter.getItemAtIndex(0) == "cmnd") {
     DynamicJsonDocument jpl(1024);
     auto err = deserializeJson(jpl, payload, length);
@@ -25,8 +32,8 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
     }
     String output;
     serializeJson(jpl, output);
-    auto dest = splitter.getItemAtIndex(2);
-    if (dest == "ranges") {
+    auto dest = splitter.getItemAtIndex(itemCount - 1);
+    if (dest == "distance") {
       if (jpl.containsKey("report")) {
         report_ranges = jpl["report"].as<bool>();
         scroller.taf("reporting  ranges: %s\n", report_ranges ? "true" : "false");
@@ -36,7 +43,7 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
 }
 
 RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scroller) {
-  client.setServer(mqtt_server, 1883);
+  client.setServer(mqtt_server, atoi(mqtt_port));
   client.setCallback([this](char* topic_str, byte* payload, unsigned int length) {
     callback(topic_str, payload, length);
   });

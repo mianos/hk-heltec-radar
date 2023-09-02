@@ -22,8 +22,7 @@ WiFiManager wifiManager(lcdDebugStream);
 bool shouldSaveConfig = false;
 char mqtt_server[40] = "mqtt";
 char mqtt_port[6] = "1883";
-char mqtt_topic[40] = "presence/radar";
-char sensor_name[40] = "radar";
+char sensor_name[40] = "radar/home";
 char radar_module[30] = "undefined";
 
 
@@ -33,7 +32,6 @@ void save_settings() {
 
   doc["mqtt_server"] = mqtt_server;
   doc["mqtt_port"] = mqtt_port;
-  doc["mqtt_topic"] = mqtt_topic;
   doc["sensor_name"] = sensor_name;
   doc["radar_module"] = radar_module;
 
@@ -75,7 +73,6 @@ void load_settings() {
 						}
 						strlcpy(mqtt_server, doc["mqtt_server"], sizeof(mqtt_server));
 						strlcpy(mqtt_port, doc["mqtt_port"], sizeof(mqtt_port));
-						strlcpy(mqtt_topic, doc["mqtt_topic"], sizeof(mqtt_topic));
 						strlcpy(sensor_name, doc["sensor_name"], sizeof(sensor_name));
 						strlcpy(radar_module, doc["radar_module"], sizeof(radar_module));
         }
@@ -114,8 +111,6 @@ void wifi_connect() {
     wifiManager.addParameter(&custom_mqtt_server);
     WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 6);
     wifiManager.addParameter(&custom_mqtt_port);
-    WiFiManagerParameter custom_mqtt_topic("topic", "mqtt topic", mqtt_topic, 40);
-    wifiManager.addParameter(&custom_mqtt_topic);
     WiFiManagerParameter custom_sensor_name("sensor_name", "sensor name", sensor_name, 40);
     wifiManager.addParameter(&custom_sensor_name);
     WiFiManagerParameter custom_radar_module("radar_module", "radar module", radar_module, 30);
@@ -131,7 +126,6 @@ void wifi_connect() {
     
     strcpy(mqtt_server, custom_mqtt_server.getValue());
     strcpy(mqtt_port, custom_mqtt_port.getValue());
-    strcpy(mqtt_topic, custom_mqtt_topic.getValue());
     strcpy(sensor_name, custom_sensor_name.getValue());
     strcpy(radar_module, custom_radar_module.getValue());
     
