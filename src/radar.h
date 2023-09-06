@@ -23,13 +23,6 @@ public:
     silence = silence_period;
   }
 
-  void mirror() {
-		if (Serial2.available()) {
-			int incomingByte = Serial2.read();
-			Serial.printf("%02x ", incomingByte);
-		}
-  }
-
   void processRadarData(float minStrength = 0.0) {
     static bool motionDetected = false;
     static bool occupancyDetected = false;

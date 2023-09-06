@@ -51,6 +51,7 @@ void save_settings() {
 // Loads custom parameters from /config.json on SPIFFS
 void load_settings() {
   if (!SPIFFS.begin(true)) {
+      Serial.printf("Failed to initialise SPIFFS\n");
       scroller.taf("Failed to initialise SPIFFS\n");
       scroller.force();
       return;

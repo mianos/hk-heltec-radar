@@ -2,17 +2,18 @@
 #include "radar.h"
 
 class LD1125 : public RadarSensor {
+  HardwareSerial SerialR;
 public:
-  LD1125(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
-    Serial2.begin(115200, SERIAL_8N1, RxPin, TxPin);
+  LD1125(EventProc* ep) : RadarSensor(ep), SerialR(2) {
+    SerialR.begin(115200, SERIAL_8N1, LD_RX, LD_TX);
     for (auto kk = 0; kk < 5; kk++) {
       for (auto ii = 0; ii < 10000; ii++) {
-        if (!Serial2.available()) {
+        if (!SerialR.available()) {
           break;
         }
-        char c = (char)Serial2.read();
+        char c = (char)SerialR.read();
       }
-      Serial2.printf("test_mode=1\r\n");
+      SerialR.printf("test_mode=1\r\n");
     }
   }
 
@@ -27,13 +28,13 @@ public:
     const unsigned long timeoutDuration = 5000; 
 
     unsigned long loopStartTime = millis();
-    while (Serial2.available()) {
+    while (SerialR.available()) {
       if (millis() - loopStartTime >= timeoutDuration) {
         Serial.println("Timeout occurred! Exiting the loop.");
         break; // Exit the loop
       }
 
-      char c = (char)Serial2.read();
+      char c = (char)SerialR.read();
       switch (state) {
         case WAIT:
           if (c == 'o' || c == 'm') {

@@ -1,11 +1,11 @@
-
 #pragma once
 #include "radar.h"
 
 class LD2410 : public RadarSensor {
+  HardwareSerial SerialR;
 public:
-  LD2410(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
-    Serial2.begin(256000, SERIAL_8N1, RxPin, TxPin);
+  LD2410(EventProc* ep) : RadarSensor(ep), SerialR(2) {
+    SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
   }
 
   String decodeRadarDataFSM() {
@@ -39,8 +39,8 @@ public:
     uint8_t targetType = 0, movingEnergy = 0, stationaryEnergy = 0, checksum = 0;
     uint16_t dataLength = 0;
 
-    while (Serial2.available()) {
-      uint8_t currentByte = Serial2.read();
+    while (SerialR.available()) {
+      uint8_t currentByte = SerialR.read();
 
       switch (state) {
         case WAIT_HEADER_F4:
