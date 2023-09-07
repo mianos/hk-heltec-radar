@@ -12,7 +12,7 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
   auto splitter = StringSplitter(topic, '/', 4);
   int itemCount = splitter.getItemCount();
   if (itemCount < 3) {
-    scroller.taf("Item count less than 3 %d '%s'\n", itemCount, topic_str);
+    display->taf("Item count less than 3 %d '%s'\n", itemCount, topic_str);
     return;
   }
 #if 0
@@ -27,7 +27,7 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
     DynamicJsonDocument jpl(1024);
     auto err = deserializeJson(jpl, payload, length);
     if (err) {
-      scroller.taf("deserializeJson() failed: '%s'\n", err.c_str());
+      display->taf("deserializeJson() failed: '%s'\n", err.c_str());
       return;
     }
     String output;
@@ -36,13 +36,13 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
     if (dest == "distance") {
       if (jpl.containsKey("report")) {
         report_ranges = jpl["report"].as<bool>();
-        scroller.taf("reporting  ranges: %s\n", report_ranges ? "true" : "false");
+        display->taf("reporting  ranges: %s\n", report_ranges ? "true" : "false");
       }
     }
   }
 }
 
-RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scroller) {
+RadarMqtt::RadarMqtt(Display* display) : client(espClient), display(display) {
   client.setServer(mqtt_server, atoi(mqtt_port));
   client.setCallback([this](char* topic_str, byte* payload, unsigned int length) {
     callback(topic_str, payload, length);
@@ -51,12 +51,12 @@ RadarMqtt::RadarMqtt(ScrollingText& scroller) : client(espClient), scroller(scro
 
 
 bool RadarMqtt::reconnect() {
-  scroller.taf("Attempting MQTT connection...\n");
+  display->taf("Attempting MQTT connection...\n");
   String clientId = String(sensor_name) + '-' + String(random(0xffff), HEX);
   if (client.connect(clientId.c_str())) {
     String cmnd_topic = String("cmnd/") + sensor_name + "/#";
     client.subscribe(cmnd_topic.c_str());
-    scroller.taf("mqtt connected\n");
+    display->taf("mqtt connected\n");
     StaticJsonDocument<200> doc;
     doc["version"] = 3;
     doc["time"] = DateTime.toISOString();
@@ -66,8 +66,8 @@ bool RadarMqtt::reconnect() {
     client.publish(status_topic.c_str(), output.c_str());
     return true;
   } else {
-    scroller.taf("failed to connect to %s\n", mqtt_server);
-    scroller.force();
+    display->taf("failed to connect to %s\n", mqtt_server);
+    display->scroll_now();
     return false;
   }
 }

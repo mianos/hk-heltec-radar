@@ -8,7 +8,7 @@ public:
     SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
   }
 
-  String decodeRadarDataFSM() {
+  String get_decoded_radar_data() {
     enum State {
       WAIT_HEADER_F4,
       WAIT_HEADER_F3,

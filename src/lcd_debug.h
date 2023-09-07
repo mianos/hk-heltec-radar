@@ -1,8 +1,9 @@
 #pragma once
+#include "display.h"
 
 class LcdDebugStream : public Stream {
 private:
-  ScrollingText& _scroller;
+  Display* display;
   static const size_t _bufferSize = 128;
   char _buffer[_bufferSize];
   size_t _bufferIndex = 0;
@@ -10,13 +11,13 @@ private:
   void flushBuffer() {
     if (_bufferIndex > 0) {
       _buffer[_bufferIndex] = '\0';
-      _scroller.taf("%s", _buffer);
+      display->taf("%s", _buffer);
       _bufferIndex = 0;
     }
-    _scroller.force();
+    display->scroll_now();
   }
 public:
-  LcdDebugStream(ScrollingText& scroller) : _scroller(scroller) {}
+  LcdDebugStream(Display* display) : display(display) {}
 
   size_t write(uint8_t data) {
     if (data == '\n') {

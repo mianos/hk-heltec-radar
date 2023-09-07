@@ -2,23 +2,21 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-#include "scroller.h"
+#include "display.h"
 #include "radar.h"
 
 struct RadarMqtt {
-  ScrollingText& scroller;
   WiFiClient espClient;
   PubSubClient client;
   bool report_ranges = false;
   RadarSensor* radar = nullptr; // Use nullptr instead of 0 for pointer initialization
-//  static constexpr const char* dname = "radar";
-//  static constexpr const char* mqtt_server = "mqtt2.mianos.com";
+  Display* display;
 
   unsigned long lastTimeCalled = 0;  // Store the last time the function was called
   const unsigned long interval = 250;  // Interval in milliseconds (1000 ms / 4 = 250 ms)
 
   void callback(char* topic_str, byte* payload, unsigned int length);
-  RadarMqtt(ScrollingText& scroller);
+  RadarMqtt(Display* display);
 
   bool reconnect();
   void handle();

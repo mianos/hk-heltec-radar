@@ -1,5 +1,7 @@
 #pragma once
-extern void wifi_connect();
+#include "display.h"
+
+extern void wifi_connect(Display *display);
 extern void load_settings();
 
 

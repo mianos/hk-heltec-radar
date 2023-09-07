@@ -8,14 +8,12 @@
 #include <FS.h>
 #include <SPIFFS.h>
 
-#include "scroller.h"
+#include "display.h"
 #include "lwifi.h"
 #include "lcd_debug.h"
 
 constexpr int PROG_BUTTON_PIN = 0; // GPIO0
 
-LcdDebugStream lcdDebugStream(scroller);
-WiFiManager wifiManager(lcdDebugStream);
 
 
 // char mqtt_server[64] = "mqtt2.mianos.com"; // Default MQTT server
@@ -37,13 +35,13 @@ void save_settings() {
 
   File file = SPIFFS.open("/config.json", "w");
   if (!file) {
-    scroller.taf("Failed to open config file for writing\n");
-    scroller.force();
+    display->taf("Failed to open config file for writing\n");
+    display->scroll_now();
     return;
   }
   if (serializeJson(doc, file) == 0) {
-    scroller.taf("Failed to write to file\n");
-    scroller.force();
+    display->taf("Failed to write to file\n");
+    display->scroll_now();
   }
   file.close();
 }
@@ -52,8 +50,8 @@ void save_settings() {
 void load_settings() {
   if (!SPIFFS.begin(true)) {
       Serial.printf("Failed to initialise SPIFFS\n");
-      scroller.taf("Failed to initialise SPIFFS\n");
-      scroller.force();
+      display->taf("Failed to initialise SPIFFS\n");
+      display->scroll_now();
       return;
     }
     if (SPIFFS.exists("/config.json")) {
@@ -68,8 +66,8 @@ void load_settings() {
 						DynamicJsonDocument doc(1024);
 						DeserializationError error = deserializeJson(doc, buf.get());
 						if (error) {
-							scroller.taf("Failed to parse config file\n");
-              scroller.force();
+							display->taf("Failed to parse config file\n");
+              display->scroll_now();
 							return;
 						}
 						strlcpy(mqtt_server, doc["mqtt_server"], sizeof(mqtt_server));
@@ -82,9 +80,9 @@ void load_settings() {
 
 
 void configModeCallback (WiFiManager *myWiFiManager) {
-  scroller.taf("Config mode AP IP %s portal ssid %s \n", WiFi.softAPIP().toString().c_str(),
+  display->taf("Config mode AP IP %s portal ssid %s \n", WiFi.softAPIP().toString().c_str(),
                                                          myWiFiManager->getConfigPortalSSID().c_str());
-  scroller.force();
+  display->scroll_now();
 }
 // WiFiManager requiring config save callback
 void saveConfigCallback () {
@@ -92,19 +90,20 @@ void saveConfigCallback () {
 }
 
 
-void wifi_connect() {
+void wifi_connect(Display* display) {
+    WiFiManager wifiManager{*(new LcdDebugStream{display})};
     wifiManager.setAPCallback(configModeCallback);
 
     wifiManager.setSaveConfigCallback(saveConfigCallback);
 
-    scroller.taf("press and hold prog now to reset .... \n");
-    scroller.force();
+    display->taf("press and hold prog now to reset .... \n");
+    display->scroll_now();
     pinMode(PROG_BUTTON_PIN, INPUT_PULLUP); // Set the PROG button as an input with pull-up resistor
     // Check if the PROG button is pressed
     if (digitalRead(PROG_BUTTON_PIN) == LOW) {
       wifiManager.resetSettings();
-      scroller.taf("Resetting\n");
-      scroller.force();
+      display->taf("Resetting\n");
+      display->scroll_now();
       ESP.restart(); // Restart to apply changes
     }
 
@@ -120,8 +119,8 @@ void wifi_connect() {
     // try to connect or fallback to ESP+ChipID AP config mode.
     if (!wifiManager.autoConnect()) {
         // reset and try again, or maybe put it to deep sleep
-        scroller.taf("restarting 2nd time\n");
-        scroller.force();
+        display->taf("restarting 2nd time\n");
+        display->scroll_now();
         ESP.restart();
     }
     

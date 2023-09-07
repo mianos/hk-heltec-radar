@@ -11,7 +11,7 @@ class RadarSensor {
 public:
   RadarSensor(EventProc* ep) : ep(ep), distanceValue(0.0), strengthValue(0.0) {}
 
-  virtual String decodeRadarDataFSM() = 0;
+  virtual String get_decoded_radar_data() = 0;
 
 protected:
   float distanceValue = 0.0;
@@ -23,14 +23,14 @@ public:
     silence = silence_period;
   }
 
-  void processRadarData(float minStrength = 0.0) {
+  void process(float minStrength = 0.0) {
     static bool motionDetected = false;
     static bool occupancyDetected = false;
     static unsigned long lastUpdateTime = 0;
     static bool detectedPrinted = false;
     static bool clearedPrinted = false;
 
-    String type = decodeRadarDataFSM();
+    String type = get_decoded_radar_data();
 
     if ((type == "mov" || type == "occ")  && strengthValue >= minStrength) {
       lastUpdateTime = millis(); // Update the time of the last radar data received
@@ -59,4 +59,3 @@ public:
     }
   }
 };
-

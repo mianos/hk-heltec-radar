@@ -13,12 +13,13 @@ private:
   static constexpr int scrollDelay = 100;
   static constexpr int MAX_STRING_SIZE = 120;
   Adafruit_SSD1306& display;
-  LinkedList<String> textList;
   String text;
   int textPosition = 0;
   bool finishedScrolling = false;
   char displayBuffer[SCREEN_WIDTH / charWidth + 1] = {};
   unsigned long lastScrollTime = 0;
+public:
+  LinkedList<String> textList;
 
 public:
   ScrollingText(Adafruit_SSD1306& displayInstance) : display(displayInstance) {
@@ -31,15 +32,6 @@ public:
   void startScrolling() {
     text = textList.shift();
     textPosition = 0;
-  }
-
-  void taf(const char *format, ...) {
-    char str[MAX_STRING_SIZE];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(str, MAX_STRING_SIZE, format, args);
-    va_end(args);
-    textList.add(str);
   }
 
   void force() {
@@ -107,5 +99,4 @@ public:
   }
 };
 
-extern ScrollingText scroller;
 extern void radar_minimal();

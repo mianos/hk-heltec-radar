@@ -17,7 +17,7 @@ public:
     }
   }
 
-  virtual String decodeRadarDataFSM() {
+  virtual String get_decoded_radar_data() {
     static enum State {
       WAIT,
       OCC_MOV,

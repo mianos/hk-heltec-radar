@@ -7,35 +7,30 @@
 #include "lwifi.h"
 #include "radar.h"
 
+#include "display.h"
 
-#include "bigtext.h"
-#include "scroller.h"
-#include "powerline.h"
 #include "mqtt.h"
 #include "ld2411.h"
 #include "ld2410.h"
 #include "ld1125.h"
 
-TwoWire twi = TwoWire(1); // create our own TwoWire instance
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &twi, OLED_RESET);
 
-ScrollingText scroller{display};
-BigText bigText{display};
-PowerLine powerLine{display};
-RadarMqtt mqtt{scroller};
+Display *display;
+
+RadarMqtt *mqtt;
+
 bool network_up{false};
 
 class LocalEP : public EventProc {
-  BigText *bigText;
-  PowerLine *powerLine;
+  Display* display;
   RadarMqtt *mqtt;
 public:
-  LocalEP(BigText *bigText, PowerLine *powerLine, RadarMqtt *mqtt) : bigText(bigText), powerLine(powerLine), mqtt(mqtt) {
+  LocalEP(Display *display, RadarMqtt *mqtt) : display(display), mqtt(mqtt) {
   }
 
   virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) {
-    bigText->displayLargeDistance(distanceValue, 10, 8);
-    powerLine->show(strengthValue);
+    display->show_large_distance(distanceValue, 10, 8);
+    display->show_power_line(strengthValue);
     if (network_up) {
       if (entry) {
         mqtt->mqtt_update_presence(entry, false, distanceValue, strengthValue);
@@ -45,8 +40,8 @@ public:
     }
   }
   virtual void Cleared() {
-    bigText->displayLargeDistance(0.0, 10, 8);
-    powerLine->show(0);
+    display->show_large_distance(0.0, 10, 8);
+    display->show_power_line(0);
     if (network_up) {
       mqtt->mqtt_update_presence(false);
     }
@@ -58,20 +53,13 @@ RadarSensor *radarSensor;
 
 void setup() {
   Serial.begin(115200);
+  display = new Display{};
 
-  twi.begin(4, 15); // SDA, SCL
-  twi.setClock(1000000L); 
-  if(!display.begin(SSD1306_SWITCHCAPVCC, SSD1306_I2C_ADDRESS)) {
-    Serial.printf("SSD1306 allocation failed\n");
-    for(;;) {}
-	}
-	display.clearDisplay();
-  display.display();
   load_settings();
-  // Example: You can put static content here that will remain on the display
-  scroller.startScrolling();
+  display->scroller_start();
+  mqtt = new RadarMqtt{display};
 
-  auto *lep = new LocalEP{&bigText, &powerLine, &mqtt};
+  auto *lep = new LocalEP{display, mqtt};
 
   if (!strcmp(radar_module, "ld2411")) {
     radarSensor = new LD2411{lep};
@@ -83,27 +71,27 @@ void setup() {
     radarSensor = new LD2410{lep};
     Serial.printf("LD2410  radar module type '%s'\n", radar_module);
   } else {
-    scroller.taf("Undefined radar module type '%s'\n", radar_module);
+    display->taf("Undefined radar module type '%s'\n", radar_module);
     Serial.printf("Undefined radar module type '%s' using LD1125\n", radar_module);
     // Using any one as not to have null calls.
     radarSensor = new LD2411{lep};
   }
 
-  wifi_connect();
+  wifi_connect(display);
   DateTime.setTimeZone("AEST-10AEDT,M10.1.0,M4.1.0/3");
   DateTime.begin(/* timeout param */);
   if (!DateTime.isTimeValid()) {
-    scroller.taf("Failed to get time from server\n");
+    display->taf("Failed to get time from server\n");
   }
   network_up = true;
 }
 
 void loop() {
   if (radarSensor) {
-    radarSensor->processRadarData();
+    radarSensor->process();
   }
-  scroller.scroll();
-  mqtt.handle();
-  display.display();
+  display->scroller_run();
+  mqtt->handle();
+  display->display();
   delay(1);
 }

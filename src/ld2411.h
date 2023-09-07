@@ -9,7 +9,7 @@ public:
     SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
   }
 
-  virtual String decodeRadarDataFSM() override {
+  virtual String get_decoded_radar_data() override {
     enum State {
       WAIT_HEADER_1,
       WAIT_HEADER_2,
