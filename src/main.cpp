@@ -53,8 +53,15 @@ RadarSensor *radarSensor;
 
 void setup() {
   Serial.begin(115200);
-  display = new Display{};
 
+  delay(5000);
+#if defined(NO_DISPLAY)
+  Serial.printf("No display\n");
+  display = new Display{};
+#else
+  Serial.printf("SS display display\n");
+  display = new SSDisplay{};
+#endif
   load_settings();
   display->scroller_start();
   mqtt = new RadarMqtt{display};

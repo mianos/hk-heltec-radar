@@ -11,7 +11,7 @@ private:
   void flushBuffer() {
     if (_bufferIndex > 0) {
       _buffer[_bufferIndex] = '\0';
-      display->taf("%s", _buffer);
+      display->taf("%s\n", _buffer);
       _bufferIndex = 0;
     }
     display->scroll_now();
