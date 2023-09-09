@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <ArduinoOTA.h>
 #include <ESPDateTime.h>
 #include "freertos/queue.h"
 
@@ -100,5 +101,6 @@ void loop() {
   display->scroller_run();
   mqtt->handle();
   display->display();
-  delay(1);
+  ArduinoOTA.handle();
+  delay(5);
 }

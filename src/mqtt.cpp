@@ -60,6 +60,8 @@ bool RadarMqtt::reconnect() {
     StaticJsonDocument<200> doc;
     doc["version"] = 3;
     doc["time"] = DateTime.toISOString();
+    doc["hostname"] = WiFi.getHostname();
+    doc["ip"] = WiFi.localIP().toString();
     String status_topic = "tele/" + String(sensor_name) + "/init";
     String output;
     serializeJson(doc, output);
