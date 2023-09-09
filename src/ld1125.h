@@ -4,7 +4,7 @@
 class LD1125 : public RadarSensor {
   HardwareSerial SerialR;
 public:
-  LD1125(EventProc* ep) : RadarSensor(ep), SerialR(2) {
+  LD1125(EventProc* ep) : RadarSensor(ep), SerialR(1) {
     SerialR.begin(115200, SERIAL_8N1, LD_RX, LD_TX);
     for (auto kk = 0; kk < 5; kk++) {
       for (auto ii = 0; ii < 10000; ii++) {

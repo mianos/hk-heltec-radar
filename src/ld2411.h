@@ -5,7 +5,7 @@
 class LD2411 : public RadarSensor {
   HardwareSerial SerialR; // Use hardware serial port 2
 public:
-  LD2411(EventProc* ep) : RadarSensor(ep), SerialR(2) {
+  LD2411(EventProc* ep) : RadarSensor(ep), SerialR(1) {
     SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
   }
 
