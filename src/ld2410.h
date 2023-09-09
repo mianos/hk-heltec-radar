@@ -4,7 +4,7 @@
 class LD2410 : public RadarSensor {
   HardwareSerial SerialR;
 public:
-  LD2410(EventProc* ep) : RadarSensor(ep), SerialR(2) {
+  LD2410(EventProc* ep) : RadarSensor(ep), SerialR(1) {
     SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
   }
 
