@@ -7,8 +7,6 @@ public:
   LD2410(EventProc* ep) : RadarSensor(ep), SerialR(1) {
     SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
   }
-
-  String get_decoded_radar_data() {
     enum State {
       WAIT_HEADER_F4,
       WAIT_HEADER_F3,
@@ -35,6 +33,9 @@ public:
     };
 
     State state = WAIT_HEADER_F4;
+
+  std::unique_ptr<Value> get_decoded_radar_data() {
+
     uint16_t movingDistance = 0, stationaryDistance = 0, detectionDistance = 0;
     uint8_t targetType = 0, movingEnergy = 0, stationaryEnergy = 0, checksum = 0;
     uint16_t dataLength = 0;
@@ -134,26 +135,38 @@ public:
               Serial.printf("Detection Distance: %d\n", detectionDistance);
             }
 #endif
+            std::unique_ptr<Value> val = nullptr;
             switch (targetType) {
             case 0:
-              strengthValue = 0.0;
-              distanceValue = 0.0;
-              strengthValue =0.0;
-              return "";
+              break;
             case 2:
-              distanceValue = static_cast<float>(stationaryDistance) / 100.0;
-              strengthValue = static_cast<float>(stationaryEnergy);
-              return "occ";
+              val.reset(new Occupancy());
+              val->value = static_cast<float>(stationaryDistance) / 100.0;
+              val->power = static_cast<float>(stationaryEnergy);
+              break;
             case 1: // mov
             case 3: // Mov and occ
-              distanceValue = static_cast<float>(movingDistance) / 100.0;
-              strengthValue = static_cast<float>(movingEnergy);
-              return "mov";
+              val.reset(new Movement());
+              val->value = static_cast<float>(movingDistance) / 100.0;
+              val->power = static_cast<float>(movingEnergy);
+              break;
+            default:
+              Serial.printf("Something else %d\n", targetType);
+              break;
             }
+            targetType = 0;
+            movingEnergy = 0;
+            movingDistance = 0;
+            stationaryEnergy = 0;
+            stationaryDistance = 0;
+            detectionDistance = 0;
+            state = WAIT_HEADER_F4;
+
+            return val;
           }
           break;
       }
     }
-    return "";
+    return nullptr;
   }
 };

@@ -38,7 +38,6 @@ public:
       }
 
       char c = (char)SerialR.read();
-      Serial.printf("%c", c);
       switch (state) {
         case WAIT:
           if (c == 'o' || c == 'm') {
