@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "radar.h"
 
 class LD1125 : public RadarSensor {
@@ -16,15 +17,17 @@ public:
       SerialR.printf("test_mode=1\r\n");
     }
   }
+private:
+    String distance, strength, rtype;
+public:
 
-  virtual String get_decoded_radar_data() {
+  std::unique_ptr<Value>  get_decoded_radar_data() {
     static enum State {
       WAIT,
       OCC_MOV,
       DIS,
       STR
     } state = WAIT;
-    static String distance, strength;
     const unsigned long timeoutDuration = 5000; 
 
     unsigned long loopStartTime = millis();
@@ -35,48 +38,58 @@ public:
       }
 
       char c = (char)SerialR.read();
+      Serial.printf("%c", c);
       switch (state) {
         case WAIT:
           if (c == 'o' || c == 'm') {
             state = OCC_MOV;
-            type += c;
+            rtype += c;
           }
           break;
         case OCC_MOV:
-          type += c;
-          if (type == "occ," || type == "mov,") {
+          rtype += c;
+          if (rtype == "occ," || rtype == "mov,") {
             state = DIS;
-          } else if (type.length() > 4) {
-            type = "";
+          } else if (rtype.length() > 4) {
+            rtype = "";
             state = WAIT;
           }
           break;
         case DIS:
           if (c == ',') {
             state = STR;
-            distanceValue = distance.toFloat(); // Decode distance here
-            distance = "";
           } else if (c != ' ' && c != 'd' && c != 'i' && c != 's' && c != '=') {
             distance += c;
           }
           break;
         case STR:
           if (c == '\n') {
+            std::unique_ptr<Value> val;
+            String retType = rtype.substring(0, rtype.length() - 1); // Removing the comma
+            rtype = "";
+
+            if (retType == "occ") {
+              val.reset(new Occupancy());
+            } else {
+              val.reset(new Speed());
+            }
+            val->value = distance.toFloat();
+            distance = "";
             if (strength != "") {
-              strengthValue = strength.toFloat() / 10.0; // Decode strength here
+              val->power = strength.toFloat() / 10.0; // Decode strength here
               strength = "";
             }
-            String retType = type.substring(0, type.length() - 1); // Removing the comma
-            type = "";
             state = WAIT;
-            return retType; // Return the detected type (occ or mov)
+//            val->print();
+            return val;
+
           } else if (c != ' ' && c != 's' && c != 't' && c != 'r' && c != '=') {
             strength += c;
           }
           break;
       }
     }
-    return ""; // Return empty string if no complete message detected
+    return nullptr;
   }
 };
 
