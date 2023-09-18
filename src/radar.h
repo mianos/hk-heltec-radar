@@ -51,33 +51,43 @@ public:
   void set_silence_period(int silence_period) {
     silence = silence_period;
   }
-
-
+  
   void process(float minPower = 0.0) {
     std::unique_ptr<Value> v = get_decoded_radar_data();
 
+    if (v == nullptr) {
+      return;
+    }
+
+    String eventType = v->etype();
+    float eventValue = v->value;
+    float eventPower = v->power;
+
     // If there's valid data and it's above the minimum power threshold
-    if (v && v->power >= minPower) {
+    if (eventPower >= minPower && eventType != "no") {
       lastUpdateTime = millis();
       clearedPrinted = false;
 
-      bool entry = false;
       if (!detectedPrinted) {
-        entry = true;
+        ep->Detected(eventType, eventValue, eventPower, true);
         detectedPrinted = true;
+      } else {
+        ep->Detected(eventType, eventValue, eventPower, false);
       }
-      String type(v->etype());
-      ep->Detected(type, v->value, v->power, entry);
+    } 
+    else if (eventType == "no" && !clearedPrinted) {
+      ep->Cleared();
+      detectedPrinted = false;
+      clearedPrinted = true;
     }
-
-    // Check if cleared should be printed based on a timeout condition
-    if ((!clearedPrinted && ((millis() - lastUpdateTime) >= silence)) ||
-        (v && v->etype() == "no")) {
+    
+    if ((millis() - lastUpdateTime >= silence) && !clearedPrinted) {
       ep->Cleared();
       detectedPrinted = false;
       clearedPrinted = true;
     }
   }
+
 };
 
 

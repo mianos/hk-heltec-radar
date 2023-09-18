@@ -11,7 +11,7 @@
 #include "display.h"
 
 #include "mqtt.h"
-//#include "ld2411.h"
+#include "ld2411.h"
 #include "ld2410.h"
 #include "ld1125.h"
 
@@ -69,13 +69,10 @@ void setup() {
 
   auto *lep = new LocalEP{display, mqtt};
 
-#if 0
   if (!strcmp(radar_module, "ld2411")) {
     radarSensor = new LD2411{lep};
     Serial.printf("LD2411  radar module type '%s'\n", radar_module);
-  } else
-#endif
-  if (!strcmp(radar_module, "ld1125")) {
+  } else if (!strcmp(radar_module, "ld1125")) {
     radarSensor = new LD1125{lep};
     Serial.printf("LD1125  radar module type '%s'\n", radar_module);
   } else if (!strcmp(radar_module, "ld2410")) {
