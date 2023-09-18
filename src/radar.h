@@ -55,32 +55,31 @@ public:
   void process(float minPower = 0.0) {
     std::unique_ptr<Value> v = get_decoded_radar_data();
 
-    if (v == nullptr) {
-      return;
-    }
+    if (v) {
+      String eventType = v->etype();
+      float eventValue = v->value;
+      float eventPower = v->power;
 
-    String eventType = v->etype();
-    float eventValue = v->value;
-    float eventPower = v->power;
+      // If there's valid data and it's above the minimum power threshold
+      if (eventPower >= minPower && eventType != "no") {
+        lastUpdateTime = millis();
+        clearedPrinted = false;  // Resetting the flag here
 
-    // If there's valid data and it's above the minimum power threshold
-    if (eventPower >= minPower && eventType != "no") {
-      lastUpdateTime = millis();
-      clearedPrinted = false;
-
-      if (!detectedPrinted) {
-        ep->Detected(eventType, eventValue, eventPower, true);
-        detectedPrinted = true;
-      } else {
-        ep->Detected(eventType, eventValue, eventPower, false);
+        if (!detectedPrinted) {
+          ep->Detected(eventType, eventValue, eventPower, true);
+          detectedPrinted = true;
+        } else {
+          ep->Detected(eventType, eventValue, eventPower, false);
+        }
+      } 
+      else if (eventType == "no" && !clearedPrinted) {
+        ep->Cleared();
+        detectedPrinted = false;
+        clearedPrinted = true;
       }
-    } 
-    else if (eventType == "no" && !clearedPrinted) {
-      ep->Cleared();
-      detectedPrinted = false;
-      clearedPrinted = true;
     }
-    
+
+    // Handle silence timeout
     if ((millis() - lastUpdateTime >= silence) && !clearedPrinted) {
       ep->Cleared();
       detectedPrinted = false;

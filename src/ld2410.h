@@ -138,6 +138,7 @@ public:
             std::unique_ptr<Value> val = nullptr;
             switch (targetType) {
             case 0:
+              val.reset(new NoTarget());
               break;
             case 2:
               val.reset(new Occupancy());

@@ -70,7 +70,7 @@ public:
             if (retType == "occ") {
               val.reset(new Occupancy());
             } else {
-              val.reset(new Speed());
+              val.reset(new Movement());
             }
             val->value = distance.toFloat();
             distance = "";
