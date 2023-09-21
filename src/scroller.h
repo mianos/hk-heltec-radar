@@ -1,6 +1,6 @@
 #pragma once
 #include <Adafruit_SSD1306.h>
-#include <LinkedList.h>
+#include "squeue.h"
 
 constexpr int SCREEN_WIDTH = 128;
 constexpr int SCREEN_HEIGHT = 64;
@@ -19,7 +19,7 @@ private:
   char displayBuffer[SCREEN_WIDTH / charWidth + 1] = {};
   unsigned long lastScrollTime = 0;
 public:
-  LinkedList<String> textList;
+  StringQueue textList{30};
 
 public:
   ScrollingText(Adafruit_SSD1306& displayInstance) : display(displayInstance) {

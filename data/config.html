@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Config Page</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Config Page</h1>
+    <form action="/save" method="post">
+      MQTT Server: <input type="text" name="MQTT_SERVER" value="%MQTT_SERVER%"><br>
+      Sensor Name: <input type="text" name="SENSOR_NAME" value="%SENSOR_NAME%"><br>
+      MQTT Port: <input type="text" name="MQTT_PORT" value="%MQTT_PORT%"><br>
+
+      <label for="RADAR_TYPE">Radar type:</label>
+      <select id="RADAR_TYPE" name="RADAR_TYPE">
+        <option value="ld2411">ld2411</option>
+        <option value="ld2410">ld2410</option>
+        <option value="ld1125">ld1125</option>
+        <option value="ld306">ld306</option>
+      </select>
+      Current Radar type: 
+      <input type="text" id="CURRENT_RADAR_TYPE" name="CURRENT_RADAR_TYPE" value="%RADAR_TYPE%" readonly><br>
+
+      <input type="submit" value="Save">
+    </form>
+    <a href="/clear">Clear Settings</a>
+  </div>
+</body>
+</html>

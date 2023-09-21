@@ -5,10 +5,10 @@
 #include <ESPDateTime.h>
 #include "freertos/queue.h"
 
-#include "lwifi.h"
 #include "radar.h"
 
 #include "display.h"
+#include "settings.h"
 
 #include "mqtt.h"
 #include "ld2411.h"
@@ -50,7 +50,7 @@ public:
 };
 
 RadarSensor *radarSensor;
-
+SettingsManager *settings;
 
 void setup() {
   Serial.begin(115200);
@@ -63,28 +63,31 @@ void setup() {
   Serial.printf("SS display display\n");
   display = new SSDisplay{};
 #endif
-  load_settings();
+  extern void wifi_connect(Display* display);
+  wifi_connect(display);
+
+  settings = new SettingsManager{};
   display->scroller_start();
-  mqtt = new RadarMqtt{display};
+  mqtt = new RadarMqtt{display, settings};
 
   auto *lep = new LocalEP{display, mqtt};
 
-  if (!strcmp(radar_module, "ld2411")) {
+  if (settings->radarType == "ld2411") {
     radarSensor = new LD2411{lep};
-    Serial.printf("LD2411  radar module type '%s'\n", radar_module);
-  } else if (!strcmp(radar_module, "ld1125")) {
+    Serial.printf("LD2411  radar module type '%s'\n", settings->radarType);
+  } else if (settings->radarType == "ld1125") {
     radarSensor = new LD1125{lep};
-    Serial.printf("LD1125  radar module type '%s'\n", radar_module);
-  } else if (!strcmp(radar_module, "ld2410")) {
+    Serial.printf("LD1125  radar module type '%s'\n", settings->radarType);
+  } else if (settings->radarType == "ld2410") {
     radarSensor = new LD2410{lep};
-    Serial.printf("LD2410  radar module type '%s'\n", radar_module);
+    Serial.printf("LD2410  radar module type '%s'\n", settings->radarType);
   } else {
-    display->taf("Undefined radar module type '%s'\n", radar_module);
-    Serial.printf("Undefined radar module type '%s' using LD2410\n", radar_module);
+    display->taf("Undefined radar module type '%s'\n", settings->radarType);
+    Serial.printf("Undefined radar module type '%s' using LD2410\n", settings->radarType);
     // Using any one as not to have null calls.
     radarSensor = new LD2410{lep};
   }
-  wifi_connect(display);
+
   DateTime.setTimeZone("AEST-10AEDT,M10.1.0,M4.1.0/3");
   DateTime.begin(/* timeout param */);
   if (!DateTime.isTimeValid()) {

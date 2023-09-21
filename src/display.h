@@ -31,6 +31,8 @@ public:
   virtual void scroller_run() {
   }
   virtual void scroll_now() {
+    // If we don't have a display, sleep a bit to make the time similar to having one
+    delay(100);
   }
   virtual void show_large_distance(float distance, int x = 0, int y = 0) {
   }
@@ -63,7 +65,7 @@ public:
     ssd_display.display();
   }
   virtual void scroller_add(const char *str)  {
-    scroller.textList.add(str);
+    scroller.textList.push(str);
   }
 
   void scroller_start() {

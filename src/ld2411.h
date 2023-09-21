@@ -3,9 +3,10 @@
 #include "radar.h"
 
 class LD2411 : public RadarSensor {
+  HardwareSerial SerialR;
 public:
-  LD2411(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep) {
-    Serial2.begin(256000, SERIAL_8N1, RxPin, TxPin);
+  LD2411(EventProc* ep, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep), SerialR(1)  {
+    SerialR.begin(256000, SERIAL_8N1, RxPin, TxPin);
   }
 
   enum State {
@@ -24,8 +25,8 @@ public:
     uint8_t type = 0;
     uint16_t distance = 0;
 
-    while (Serial2.available()) {
-      uint8_t currentByte = Serial2.read();
+    while (SerialR.available()) {
+      uint8_t currentByte = SerialR.read();
       
       switch (state) {
         case WAIT_HEADER_1:

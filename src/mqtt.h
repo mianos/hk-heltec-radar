@@ -4,6 +4,7 @@
 
 #include "display.h"
 #include "radar.h"
+#include "settings.h"
 
 struct RadarMqtt {
   WiFiClient espClient;
@@ -11,12 +12,13 @@ struct RadarMqtt {
   bool report_ranges = false;
   RadarSensor* radar = nullptr; // Use nullptr instead of 0 for pointer initialization
   Display* display;
+  SettingsManager *settings;
 
   unsigned long lastTimeCalled = 0;  // Store the last time the function was called
   const unsigned long interval = 250;  // Interval in milliseconds (1000 ms / 4 = 250 ms)
 
   void callback(char* topic_str, byte* payload, unsigned int length);
-  RadarMqtt(Display* display);
+  RadarMqtt(Display* display, SettingsManager *settings);
 
   bool reconnect();
   void handle();

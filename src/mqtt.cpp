@@ -4,8 +4,8 @@
 #include <WiFi.h>
 #include <StringSplitter.h>
 
+#include "settings.h"
 #include "mqtt.h"
-#include "lwifi.h"
 
 void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
   auto topic = String(topic_str);
@@ -42,8 +42,9 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
   }
 }
 
-RadarMqtt::RadarMqtt(Display* display) : client(espClient), display(display) {
-  client.setServer(mqtt_server, atoi(mqtt_port));
+
+RadarMqtt::RadarMqtt(Display* display, SettingsManager *settings) : client(espClient), display(display), settings(settings) {
+  client.setServer(settings->mqttServer.c_str(), atoi(settings->mqttPort.c_str()));
   client.setCallback([this](char* topic_str, byte* payload, unsigned int length) {
     callback(topic_str, payload, length);
   });
@@ -52,9 +53,9 @@ RadarMqtt::RadarMqtt(Display* display) : client(espClient), display(display) {
 
 bool RadarMqtt::reconnect() {
   display->taf("Attempting MQTT connection...\n");
-  String clientId = String(sensor_name) + '-' + String(random(0xffff), HEX);
+  String clientId = settings->sensorName + '-' + String(random(0xffff), HEX);
   if (client.connect(clientId.c_str())) {
-    String cmnd_topic = String("cmnd/") + sensor_name + "/#";
+    String cmnd_topic = String("cmnd/") + settings->sensorName + "/#";
     client.subscribe(cmnd_topic.c_str());
     display->taf("mqtt connected\n");
     StaticJsonDocument<200> doc;
@@ -62,13 +63,13 @@ bool RadarMqtt::reconnect() {
     doc["time"] = DateTime.toISOString();
     doc["hostname"] = WiFi.getHostname();
     doc["ip"] = WiFi.localIP().toString();
-    String status_topic = "tele/" + String(sensor_name) + "/init";
+    String status_topic = "tele/" + settings->sensorName + "/init";
     String output;
     serializeJson(doc, output);
     client.publish(status_topic.c_str(), output.c_str());
     return true;
   } else {
-    display->taf("failed to connect to %s\n", mqtt_server);
+    display->taf("failed to connect to %s\n", settings->mqttServer);
     display->scroll_now();
     return false;
   }
@@ -107,7 +108,7 @@ void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, flo
     doc["strength"] = (int)(strengthValue * 10.0 + 0.5) / 10.0;
   }
   doc["time"] = DateTime.toISOString();
-  String status_topic = "tele/" + String(sensor_name) + "/presence";
+  String status_topic = "tele/" + settings->sensorName + "/presence";
   String output;
   serializeJson(doc, output);
   client.publish(status_topic.c_str(), output.c_str());
