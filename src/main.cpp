@@ -14,6 +14,7 @@
 #include "ld2411.h"
 #include "ld2410.h"
 #include "ld1125.h"
+#include "ldnone.h"
 
 
 Display *display;
@@ -71,6 +72,7 @@ void setup() {
   mqtt = new RadarMqtt{display, settings};
 
   auto *lep = new LocalEP{display, mqtt};
+  Serial.printf("Local EP started\n");
 
   if (settings->radarType == "ld2411") {
     radarSensor = new LD2411{lep};
@@ -83,9 +85,9 @@ void setup() {
     Serial.printf("LD2410  radar module type '%s'\n", settings->radarType);
   } else {
     display->taf("Undefined radar module type '%s'\n", settings->radarType);
-    Serial.printf("Undefined radar module type '%s' using LD2410\n", settings->radarType);
+    Serial.printf("Undefined radar module type '%s' using LDNoRadar\n", settings->radarType);
     // Using any one as not to have null calls.
-    radarSensor = new LD2410{lep};
+    radarSensor = new LDNoRadar{lep};
   }
 
   DateTime.setTimeZone("AEST-10AEDT,M10.1.0,M4.1.0/3");

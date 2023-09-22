@@ -32,7 +32,7 @@ public:
   }
   virtual void scroll_now() {
     // If we don't have a display, sleep a bit to make the time similar to having one
-    delay(100);
+    delay(1000);
   }
   virtual void show_large_distance(float distance, int x = 0, int y = 0) {
   }

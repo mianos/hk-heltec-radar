@@ -106,7 +106,7 @@ void SettingsManager::loadDefaultSettings() {
     mqttServer = "default_server";
     radarType = "default_type";
     mqttPort = "1883";
-    sensorName = "default_sensor";
+    sensorName = "ldnoradar";
 }
 
 // Implementation of private methods

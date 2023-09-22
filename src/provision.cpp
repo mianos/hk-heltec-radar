@@ -81,7 +81,7 @@ void wifi_connect(Display* display) {
 //  WiFiProv.printQR(service_name, pop, "softap");
 
   while (WiFi.status() != WL_CONNECTED) {
-    display->taf("Connecting to WiFi...");
+    display->taf("Connecting to WiFi...\n");
     display->scroll_now();
   }
 }
