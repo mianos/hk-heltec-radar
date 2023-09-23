@@ -55,8 +55,6 @@ SettingsManager *settings;
 
 void setup() {
   Serial.begin(115200);
-
-  delay(5000);
 #if defined(NO_DISPLAY)
   Serial.printf("No display\n");
   display = new Display{};
@@ -86,7 +84,6 @@ void setup() {
   } else {
     display->taf("Undefined radar module type '%s'\n", settings->radarType);
     Serial.printf("Undefined radar module type '%s' using LDNoRadar\n", settings->radarType);
-    // Using any one as not to have null calls.
     radarSensor = new LDNoRadar{lep};
   }
 

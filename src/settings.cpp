@@ -17,6 +17,17 @@ void SettingsManager::setupServer() {
 
     // Serve static files
     serveStaticFile("/style.css");
+    server.serveStatic("/time", SPIFFS, "/time.html");
+
+    server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
+      StaticJsonDocument<200> jsonDoc;  // Create a StaticJsonDocument object. Adjust the capacity as needed.
+      jsonDoc["time"] = "NOW";          // Insert the time data into the JSON object.
+
+      String jsonResponse;
+      serializeJson(jsonDoc, jsonResponse);  // Serialize the JSON object to a string.
+
+      request->send(200, "application/json", jsonResponse);  // Send the JSON response.
+    });
 
     // Server routing setup
     server.on("/config", HTTP_GET, [&](AsyncWebServerRequest* request) {

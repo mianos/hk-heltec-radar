@@ -58,8 +58,9 @@ bool RadarMqtt::reconnect() {
     String cmnd_topic = String("cmnd/") + settings->sensorName + "/#";
     client.subscribe(cmnd_topic.c_str());
     display->taf("mqtt connected\n");
+    display->scroll_now();
     StaticJsonDocument<200> doc;
-    doc["version"] = 3;
+    doc["version"] = 4;
     doc["time"] = DateTime.toISOString();
     doc["hostname"] = WiFi.getHostname();
     doc["ip"] = WiFi.localIP().toString();
@@ -69,7 +70,7 @@ bool RadarMqtt::reconnect() {
     client.publish(status_topic.c_str(), output.c_str());
     return true;
   } else {
-    display->taf("failed to connect to %s\n", settings->mqttServer);
+    display->taf("failed to connect to %s\n", settings->mqttServer.c_str());
     display->scroll_now();
     return false;
   }
