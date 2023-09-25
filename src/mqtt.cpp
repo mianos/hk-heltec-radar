@@ -86,7 +86,7 @@ void RadarMqtt::handle() {
 }
 
 
-void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, float strengthValue) {
+void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, float strengthValue, bool speed_type) {
   if (!client.connected()) {
     if (!reconnect()) {
       return;
@@ -103,7 +103,12 @@ void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, flo
   StaticJsonDocument<200> doc;
   doc["entry"] = entry || other;
   if (distance != 0.0) {
-    doc["distance"] = (int)(distance * 100.0 + 0.5) / 100.0;
+    auto val = (int)(distance * 100.0 + 0.5) / 100.0;
+    if (speed_type) {
+      doc["speed"] = val;
+    } else {
+      doc["distance"] = val;
+    }
   }
   if (strengthValue != 0.0) {
     doc["strength"] = (int)(strengthValue * 10.0 + 0.5) / 10.0;

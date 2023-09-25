@@ -1,12 +1,12 @@
 #pragma once
 #include "radar.h"
 
-class SpeedRadar : public RadarSensor {
+class LD306 : public RadarSensor {
   HardwareSerial SerialR;
   int ldEnablePin;
 
 public:
-  SpeedRadar(EventProc* ep, int8_t RxPin = 21, int8_t TxPin = 47, int8_t enablePin = 41) : RadarSensor(ep), SerialR(1), ldEnablePin(enablePin)  {
+  LD306(EventProc* ep, int8_t RxPin = 21, int8_t TxPin = 47, int8_t enablePin = 41) : RadarSensor(ep), SerialR(1), ldEnablePin(enablePin)  {
     pinMode(ldEnablePin, OUTPUT);
     digitalWrite(ldEnablePin, LOW); // Initially disable the radar
     SerialR.begin(9600, SERIAL_8N1, RxPin, TxPin);
@@ -39,7 +39,7 @@ public:
     digitalWrite(ldEnablePin, LOW);
   }
 
-  std::unique_ptr<Value> get_decoded_speed_data() {
+  std::unique_ptr<Value> get_decoded_radar_data() {
     while (SerialR.available()) {
       uint8_t currentByte = SerialR.read();
       computed_checksum += currentByte;
@@ -78,15 +78,15 @@ public:
           computed_checksum -= checksum;
           computed_checksum &= 0xFF;
           if (checksum == computed_checksum) {
-  #if 0
-            std::unique_ptr<Value> val(new Speed());
-            val->value = static_cast<float>(speed);
             state = WAIT_HEADER_1;
             computed_checksum = 0;
-            return val;
-#else
-            return nullptr;
-#endif
+            if (speed) {
+              std::unique_ptr<Value> val(new Speed());
+              val->value = static_cast<float>(speed);
+              return val;
+            } else {
+              continue;
+            }
           } else {
             state = WAIT_HEADER_1;
             computed_checksum = 0;

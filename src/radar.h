@@ -1,11 +1,9 @@
-
 #pragma once
 #include <memory>
-#include <Arduino.h>
 
 class EventProc {
 public:
-  virtual void Detected(String& type, float value, float power, bool entry) = 0;
+  virtual void Detected(String& type, float value, float power, bool entry, bool speed_type=false) = 0;
   virtual void Cleared() = 0;
 };
 
@@ -34,11 +32,14 @@ struct NoTarget : public Value {
   const char* etype() override { return "no"; }
 };
 
+
 class RadarSensor {
   EventProc* ep;
   bool detectedPrinted = false;
   bool clearedPrinted = false;
   unsigned long lastUpdateTime = 0;
+  float lastValue = 0.0;  // Add this line to keep track of the last value
+
 public:
   RadarSensor(EventProc* ep) : ep(ep) {}
 
@@ -51,7 +52,7 @@ public:
   void set_silence_period(int silence_period) {
     silence = silence_period;
   }
-  
+
   void process(float minPower = 0.0) {
     std::unique_ptr<Value> v = get_decoded_radar_data();
 
@@ -65,13 +66,14 @@ public:
         lastUpdateTime = millis();
         clearedPrinted = false;  // Resetting the flag here
 
-        if (!detectedPrinted) {
+        if (!detectedPrinted || eventValue != lastValue) {
           ep->Detected(eventType, eventValue, eventPower, true);
           detectedPrinted = true;
+          lastValue = eventValue;  // Update the last value
         } else {
           ep->Detected(eventType, eventValue, eventPower, false);
         }
-      } 
+      }
       else if (eventType == "no" && !clearedPrinted) {
         ep->Cleared();
         detectedPrinted = false;
@@ -86,7 +88,6 @@ public:
       clearedPrinted = true;
     }
   }
-
 };
 
 

@@ -23,6 +23,6 @@ struct RadarMqtt {
   bool reconnect();
   void handle();
 
-  void mqtt_update_presence(bool entry, bool other = false, float distance = 0.0f, float strengthValue = 0.0f);
+  void mqtt_update_presence(bool entry, bool other = false, float distance = 0.0f, float strengthValue = 0.0f, bool speed_type=false);
 };
 

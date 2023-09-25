@@ -14,6 +14,7 @@
 #include "ld2411.h"
 #include "ld2410.h"
 #include "ld1125.h"
+#include "ld306.h"
 #include "ldnone.h"
 
 
@@ -30,12 +31,12 @@ public:
   LocalEP(Display *display, RadarMqtt *mqtt) : display(display), mqtt(mqtt) {
   }
 
-  virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry) {
+  virtual void Detected(String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
     display->show_large_distance(distanceValue, 10, 8);
     display->show_power_line(strengthValue);
     if (network_up) {
       if (entry) {
-        mqtt->mqtt_update_presence(entry, false, distanceValue, strengthValue);
+        mqtt->mqtt_update_presence(entry, false, distanceValue, strengthValue, speed_type);
       } else {
         mqtt->mqtt_update_presence(entry, true, distanceValue, strengthValue);
       }
@@ -81,6 +82,9 @@ void setup() {
   } else if (settings->radarType == "ld2410") {
     radarSensor = new LD2410{lep};
     Serial.printf("LD2410  radar module type '%s'\n", settings->radarType);
+  } else if (settings->radarType == "ld306") {
+    radarSensor = new LD306{lep};
+    Serial.printf("LD306  radar module type '%s'\n", settings->radarType);
   } else {
     display->taf("Undefined radar module type '%s'\n", settings->radarType);
     Serial.printf("Undefined radar module type '%s' using LDNoRadar\n", settings->radarType);
