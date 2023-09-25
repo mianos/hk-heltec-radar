@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Radar Status</title>
+  <link rel="stylesheet" type="text/css" href="/style.css">
+  <script>
+    // Function to fetch time from /time endpoint and display it on the home page
+    function fetchTime() {
+      fetch("/status")
+        .then(response => response.json())
+        .then(data => {
+          // Assume data.time contains the time
+          document.getElementById("deviceTime").innerText = "Device Time: " + data.time;
+        })
+        .catch(error => {
+          console.error("Error fetching time:", error);
+          document.getElementById("deviceTime").innerText = "Error fetching time.";
+        });
+    }
+  </script>
+</head>
+<body onload="fetchTime()">
+  <div class="container">
+    <h1>Time</h1>
+    <div id="deviceTime">Fetching time...</div>
+    <!-- Additional content can go here -->
+  </div>
+</body>
+</html>
