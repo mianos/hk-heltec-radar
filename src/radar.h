@@ -53,6 +53,7 @@ public:
     silence = silence_period;
   }
 
+  // TODO: rework this so that on non speed types it won't print the distance values too much
   void process(float minPower = 0.0) {
     std::unique_ptr<Value> v = get_decoded_radar_data();
 
@@ -66,12 +67,13 @@ public:
         lastUpdateTime = millis();
         clearedPrinted = false;  // Resetting the flag here
 
+        auto speed_type = eventType == "spd" ? true : false;
         if (!detectedPrinted || eventValue != lastValue) {
-          ep->Detected(eventType, eventValue, eventPower, true);
+          ep->Detected(eventType, eventValue, eventPower, true, speed_type);
           detectedPrinted = true;
           lastValue = eventValue;  // Update the last value
         } else {
-          ep->Detected(eventType, eventValue, eventPower, false);
+          ep->Detected(eventType, eventValue, eventPower, false, speed_type);
         }
       }
       else if (eventType == "no" && !clearedPrinted) {
