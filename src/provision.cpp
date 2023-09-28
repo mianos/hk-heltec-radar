@@ -57,7 +57,11 @@ void SysProvEvent(arduino_event_t *sys_event)
 
 SettingsManager *settingsManager;
 
+#if defined(BOOT_BUTTON)
+constexpr int PROG_BUTTON_PIN = BOOT_BUTTON;
+#else
 constexpr int PROG_BUTTON_PIN = 0; // GPIO0
+#endif
 
 void wifi_connect(Display* display) {
 //  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -71,7 +75,7 @@ void wifi_connect(Display* display) {
   display->scroll_now();
   delay(1000);
   if (digitalRead(PROG_BUTTON_PIN) == LOW) {
-    display->taf("Resetting\n");
+    display->taf("Reset button low Resetting\n");
     display->scroll_now();
     WiFi.disconnect(false,true); 
     delay(500);

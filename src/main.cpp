@@ -15,6 +15,7 @@
 #include "ld2410.h"
 #include "ld1125.h"
 #include "ld306.h"
+#include "ld2450.h"
 #include "ldnone.h"
 
 
@@ -85,6 +86,9 @@ void setup() {
   } else if (settings->radarType == "ld306") {
     radarSensor = new LD306{lep};
     Serial.printf("LD306  radar module type '%s'\n", settings->radarType);
+  } else if (settings->radarType == "ld2450") {
+    radarSensor = new LD2450{lep};
+    Serial.printf("LD2450  radar module type '%s'\n", settings->radarType);
   } else {
     display->taf("Undefined radar module type '%s'\n", settings->radarType);
     Serial.printf("Undefined radar module type '%s' using LDNoRadar\n", settings->radarType);
