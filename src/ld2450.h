@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "radar.h"
 
 class LD2450 : public RadarSensor {
@@ -53,7 +54,8 @@ public:
       SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
     }
 
-    std::unique_ptr<Value> get_decoded_radar_data() {
+    std::vector<std::unique_ptr<Value>>  get_decoded_radar_data() {
+      std::vector<std::unique_ptr<Value>> valuesList;
       while (SerialR.available()) {
         uint8_t byteValue = SerialR.read();
 
@@ -110,11 +112,11 @@ public:
                 }
                 currentState = SEARCH_FOR_START;
                 endSeqCount = 0;
-                return nullptr;
+                return valuesList;
             }
             break;
         }
       }
-      return nullptr;
+      return valuesList;
     }
 };

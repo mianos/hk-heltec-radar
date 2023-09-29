@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "radar.h"
 
 class LD2410 : public RadarSensor {
@@ -34,8 +35,8 @@ public:
 
     State state = WAIT_HEADER_F4;
 
-  std::unique_ptr<Value> get_decoded_radar_data() {
-
+  std::vector<std::unique_ptr<Value>>  get_decoded_radar_data() {
+    std::vector<std::unique_ptr<Value>> valuesList;
     uint16_t movingDistance = 0, stationaryDistance = 0, detectionDistance = 0;
     uint8_t targetType = 0, movingEnergy = 0, stationaryEnergy = 0, checksum = 0;
     uint16_t dataLength = 0;
@@ -163,11 +164,12 @@ public:
             detectionDistance = 0;
             state = WAIT_HEADER_F4;
 
-            return val;
+            valuesList.push_back(std::move(val));
+            return valuesList;
           }
           break;
       }
     }
-    return nullptr;
+    return valuesList;
   }
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <memory>
 
 class EventProc {
@@ -43,7 +44,7 @@ class RadarSensor {
 public:
   RadarSensor(EventProc* ep) : ep(ep) {}
 
-  virtual std::unique_ptr<Value> get_decoded_radar_data() = 0;
+  virtual std::vector<std::unique_ptr<Value>> get_decoded_radar_data() = 0;
 
 protected:
   int silence = 2000;
@@ -55,39 +56,41 @@ public:
 
   // TODO: rework this so that on non speed types it won't print the distance values too much
   void process(float minPower = 0.0) {
-    std::unique_ptr<Value> v = get_decoded_radar_data();
+    auto valuesList = get_decoded_radar_data();
 
-    if (v) {
-      String eventType = v->etype();
-      float eventValue = v->value;
-      float eventPower = v->power;
+    for (auto &v : valuesList) {
+      if (v) {
+        String eventType = v->etype();
+        float eventValue = v->value;
+        float eventPower = v->power;
 
-      // If there's valid data and it's above the minimum power threshold
-      if (eventPower >= minPower && eventType != "no") {
-        lastUpdateTime = millis();
-        clearedPrinted = false;  // Resetting the flag here
+        // If there's valid data and it's above the minimum power threshold
+        if (eventPower >= minPower && eventType != "no") {
+          lastUpdateTime = millis();
+          clearedPrinted = false;  // Resetting the flag here
 
-        auto speed_type = eventType == "spd" ? true : false;
-        if (!detectedPrinted || eventValue != lastValue) {
-          ep->Detected(eventType, eventValue, eventPower, true, speed_type);
-          detectedPrinted = true;
-          lastValue = eventValue;  // Update the last value
-        } else {
-          ep->Detected(eventType, eventValue, eventPower, false, speed_type);
+          auto speed_type = eventType == "spd" ? true : false;
+          if (!detectedPrinted || eventValue != lastValue) {
+            ep->Detected(eventType, eventValue, eventPower, true, speed_type);
+            detectedPrinted = true;
+            lastValue = eventValue;  // Update the last value
+          } else {
+            ep->Detected(eventType, eventValue, eventPower, false, speed_type);
+          }
+        }
+        else if (eventType == "no" && !clearedPrinted) {
+          ep->Cleared();
+          detectedPrinted = false;
+          clearedPrinted = true;
         }
       }
-      else if (eventType == "no" && !clearedPrinted) {
+
+      // Handle silence timeout
+      if ((millis() - lastUpdateTime >= silence) && !clearedPrinted) {
         ep->Cleared();
         detectedPrinted = false;
         clearedPrinted = true;
       }
-    }
-
-    // Handle silence timeout
-    if ((millis() - lastUpdateTime >= silence) && !clearedPrinted) {
-      ep->Cleared();
-      detectedPrinted = false;
-      clearedPrinted = true;
     }
   }
 };

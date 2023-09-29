@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <vector>
 #include "radar.h"
 
 class LD1125 : public RadarSensor {
@@ -21,7 +22,8 @@ private:
     String distance, strength, rtype;
 public:
 
-  std::unique_ptr<Value>  get_decoded_radar_data() {
+  std::vector<std::unique_ptr<Value>>   get_decoded_radar_data() {
+    std::vector<std::unique_ptr<Value>> valuesList;
     static enum State {
       WAIT,
       OCC_MOV,
@@ -80,7 +82,7 @@ public:
             }
             state = WAIT;
 //            val->print();
-            return val;
+            return valuesList;
 
           } else if (c != ' ' && c != 's' && c != 't' && c != 'r' && c != '=') {
             strength += c;
@@ -88,7 +90,7 @@ public:
           break;
       }
     }
-    return nullptr;
+    return valuesList;
   }
 };
 

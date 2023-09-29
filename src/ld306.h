@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "radar.h"
 
 class LD306 : public RadarSensor {
@@ -39,7 +40,8 @@ public:
     digitalWrite(ldEnablePin, LOW);
   }
 
-  std::unique_ptr<Value> get_decoded_radar_data() {
+  std::vector<std::unique_ptr<Value>>  get_decoded_radar_data() {
+    std::vector<std::unique_ptr<Value>> valuesList;
     while (SerialR.available()) {
       uint8_t currentByte = SerialR.read();
       computed_checksum += currentByte;
@@ -83,7 +85,8 @@ public:
             if (speed) {
               std::unique_ptr<Value> val(new Speed());
               val->value = static_cast<float>(speed);
-              return val;
+              // return val;
+              return valuesList;
             } else {
               continue;
             }
@@ -94,6 +97,6 @@ public:
           break;
       }
     }
-    return nullptr;
+    return valuesList;
   }
 };
