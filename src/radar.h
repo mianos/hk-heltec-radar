@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 
+
 class EventProc {
 public:
   virtual void Detected(String& type, float value, float power, bool entry, bool speed_type=false) = 0;
@@ -9,39 +10,61 @@ public:
 };
 
 struct Value {
-  float value;
   float power;
   virtual const char* etype() = 0;
   virtual void print() {
-    Serial.printf("value %g power %g\n", value, power);
+    Serial.printf("un-overridden '%s' dpower %g\n", etype(), power);
   }
-};
-
-struct Speed : public Value {
-  const char* etype() override { return "spd"; }
+  virtual float value() {
+    return 0.0;
+  }
+  Value(float power=0.0) : power(power) {}
 };
 
 struct Movement : public Value {
+  float distance = 0.0;
   const char* etype() override { return "mov"; }
+  float value() {
+    return distance;
+  }
+  Movement(float distance, float power=0.0) : Value(power), distance(distance) {}
 };
+
+struct Speed : public Value {
+  float speed = 0.0;
+  const char* etype() override { return "spd"; }
+  Speed(float speed) : speed(speed) {}
+  float value() {
+    return speed;
+  }
+};
+
 
 struct Occupancy : public Value {
+  float distance = 0.0;
   const char* etype() override { return "occ"; }
-};
-
-struct NoTarget : public Value {
-  const char* etype() override { return "no"; }
+  float value() {
+    return distance;
+  }
+  Occupancy(float distance, float power=0.0) : Value(power), distance(distance) {}
 };
 
 struct Range : public Value {
   float x = 0.0;
   float y = 0.0;
+  float speed;
+  int reference;
   const char* etype() override { return "rng"; }
   virtual void print() {
-    Serial.printf("speed %g x pos %g Y pos %gg\n", value);
+    Serial.printf("speed %1.2f x pos %1.2f Y pos %1.2f %2d\n", speed, x, y, reference);
   }
+  Range(float x, float y, float speed, int reference=0) : x(x), y(y), speed(speed), reference(reference) {}
 };
 
+
+struct NoTarget : public Value {
+  const char* etype() override { return "no"; }
+};
 
 class RadarSensor {
   EventProc* ep;
@@ -69,6 +92,11 @@ public:
 
     for (auto &v : valuesList) {
       if (v) {
+        v->print();
+      }
+    }
+  }
+#if 0
         String eventType = v->etype();
         float eventValue = v->value;
         float eventPower = v->power;
@@ -101,7 +129,7 @@ public:
         clearedPrinted = true;
       }
     }
-  }
+#endif
 };
 
 

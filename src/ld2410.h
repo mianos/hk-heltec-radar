@@ -136,26 +136,29 @@ public:
               Serial.printf("Detection Distance: %d\n", detectionDistance);
             }
 #endif
-            std::unique_ptr<Value> val = nullptr;
             switch (targetType) {
             case 0:
-              val.reset(new NoTarget());
+              valuesList.push_back(std::unique_ptr<Value>(
+                new NoTarget()));
               break;
             case 2:
-              val.reset(new Occupancy());
-              val->value = static_cast<float>(stationaryDistance) / 100.0;
-              val->power = static_cast<float>(stationaryEnergy);
+              valuesList.push_back(std::unique_ptr<Value>(
+                new Occupancy(
+                  static_cast<float>(stationaryDistance) / 100.0,
+                  static_cast<float>(stationaryEnergy))));
               break;
             case 1: // mov
             case 3: // Mov and occ
-              val.reset(new Movement());
-              val->value = static_cast<float>(movingDistance) / 100.0;
-              val->power = static_cast<float>(movingEnergy);
+              valuesList.push_back(std::unique_ptr<Value>(
+                new Movement(
+                  static_cast<float>(movingDistance) / 100.0,
+                  static_cast<float>(movingEnergy))));
               break;
             default:
               Serial.printf("Something else %d\n", targetType);
               break;
             }
+
             targetType = 0;
             movingEnergy = 0;
             movingDistance = 0;
@@ -164,7 +167,6 @@ public:
             detectionDistance = 0;
             state = WAIT_HEADER_F4;
 
-            valuesList.push_back(std::move(val));
             return valuesList;
           }
           break;

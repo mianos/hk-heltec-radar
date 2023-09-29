@@ -96,8 +96,6 @@ public:
             }
 
             if (endSeqCount == TOTAL_END_BYTES) {
-                Serial.println("End of packet detected.");
-
                 // Print decoded target data only if not all distances are zero
                 if (!isAllDistancesZero()) {
                     for (int i = 0; i < 3; i++) { // for each target
@@ -106,14 +104,14 @@ public:
                         int16_t speed = decodeSpeed(targetData[i*8 + 4], targetData[i*8 + 5]);
                         uint16_t resolution = (targetData[i*8 + 7] << 8) | targetData[i*8 + 6];
 
-                        Serial.printf("Target %d - X: %d mm, Y: %d mm, Speed: %d cm/s, Resolution: %d mm\n", 
-                                      i+1, x, y, speed, resolution);
+//                        Serial.printf("Target %d - X: %d mm, Y: %d mm, Speed: %d cm/s, Resolution: %d mm\n", 
+//                                      i+1, x, y, speed, resolution);
                         if (x) {
-                          auto range = new Range();
-                          range->x = x;
-                          range->y = y;
-                          range->value = speed;
-                          valuesList.push_back(std::unique_ptr<Value>(range));
+                          valuesList.push_back(std::unique_ptr<Value>(
+                            new Range(static_cast<float>(x) / 1000.0, 
+                                      static_cast<float>(y) / 1000.0,
+                                      static_cast<float>(speed) * 0.036,
+                                      i)));
                         }
                     }
                 }

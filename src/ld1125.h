@@ -65,21 +65,22 @@ public:
           break;
         case STR:
           if (c == '\n') {
-            std::unique_ptr<Value> val;
             String retType = rtype.substring(0, rtype.length() - 1); // Removing the comma
             rtype = "";
 
-            if (retType == "occ") {
-              val.reset(new Occupancy());
-            } else {
-              val.reset(new Movement());
-            }
-            val->value = distance.toFloat();
-            distance = "";
+            auto power_f = 0.0;
             if (strength != "") {
-              val->power = strength.toFloat() / 10.0; // Decode strength here
+              power_f = strength.toFloat() / 10.0;
               strength = "";
             }
+            auto distance_f = distance.toFloat();
+
+            if (retType == "occ") {
+              valuesList.push_back(std::unique_ptr<Value>(new Occupancy(distance_f, power_f)));
+            } else {
+              valuesList.push_back(std::unique_ptr<Value>(new Movement(distance_f, power_f)));
+            }
+            distance = "";
             state = WAIT;
 //            val->print();
             return valuesList;

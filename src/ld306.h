@@ -83,9 +83,7 @@ public:
             state = WAIT_HEADER_1;
             computed_checksum = 0;
             if (speed) {
-              std::unique_ptr<Value> val(new Speed());
-              val->value = static_cast<float>(speed);
-              // return val;
+              valuesList.push_back(std::unique_ptr<Value>(new Speed(static_cast<float>(speed))));
               return valuesList;
             } else {
               continue;

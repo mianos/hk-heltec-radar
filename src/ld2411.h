@@ -68,17 +68,16 @@ public:
         case READ_END_OF_FRAME_2:
           if (currentByte == 0x55) {
             state = WAIT_HEADER_1;
-            std::unique_ptr<Value> val = nullptr;
             if (type == 1) {
-              val.reset(new Occupancy());
-              val->value = static_cast<float>(distance) / 100.0;
+              valuesList.push_back(std::unique_ptr<Value>(
+                    new Occupancy(static_cast<float>(distance) / 100.0)));
             } else if (type == 2) {
-              val.reset(new Movement());
-              val->value = static_cast<float>(distance) / 100.0;
+              valuesList.push_back(std::unique_ptr<Value>(
+                    new Movement(static_cast<float>(distance) / 100.0)));
             } else {
-              val.reset(new NoTarget());
+              valuesList.push_back(std::unique_ptr<Value>(
+                    new NoTarget()));
             }
-            //return val;
             return valuesList;
           } else {
             state = WAIT_HEADER_1;
