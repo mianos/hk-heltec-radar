@@ -108,6 +108,13 @@ public:
 
                         Serial.printf("Target %d - X: %d mm, Y: %d mm, Speed: %d cm/s, Resolution: %d mm\n", 
                                       i+1, x, y, speed, resolution);
+                        if (x) {
+                          auto range = new Range();
+                          range->x = x;
+                          range->y = y;
+                          range->value = speed;
+                          valuesList.push_back(std::unique_ptr<Value>(range));
+                        }
                     }
                 }
                 currentState = SEARCH_FOR_START;

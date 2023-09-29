@@ -12,7 +12,7 @@ struct Value {
   float value;
   float power;
   virtual const char* etype() = 0;
-  void print() {
+  virtual void print() {
     Serial.printf("value %g power %g\n", value, power);
   }
 };
@@ -31,6 +31,15 @@ struct Occupancy : public Value {
 
 struct NoTarget : public Value {
   const char* etype() override { return "no"; }
+};
+
+struct Range : public Value {
+  float x = 0.0;
+  float y = 0.0;
+  const char* etype() override { return "rng"; }
+  virtual void print() {
+    Serial.printf("speed %g x pos %g Y pos %gg\n", value);
+  }
 };
 
 
