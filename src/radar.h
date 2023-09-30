@@ -72,68 +72,88 @@ struct NoTarget : public Value {
 
 class RadarSensor {
   EventProc* ep;
-  bool detectedPrinted = false;
-  bool clearedPrinted = false;
-  unsigned long lastUpdateTime = 0;
-  float lastValue = 0.0;  // Add this line to keep track of the last value
-
 public:
   RadarSensor(EventProc* ep) : ep(ep) {}
 
   virtual std::vector<std::unique_ptr<Value>> get_decoded_radar_data() = 0;
-
 protected:
-  int silence = 2000;
+  enum DetectionState {
+      STATE_NOT_DETECTED,
+      STATE_DETECTED_ONCE,
+      STATE_DETECTED,
+      STATE_CLEARED_ONCE
+  };
+  DetectionState currentState = STATE_NOT_DETECTED;
+  uint32_t lastDetectionTime = 0;
+  uint32_t detectionTimeout = 2000;
 
 public:
   void set_silence_period(int silence_period) {
-    silence = silence_period;
+    detectionTimeout = silence_period;
   }
 
-  // TODO: rework this so that on non speed types it won't print the distance values too much
+  void detected() {
+    Serial.println("Detected");
+  }
+
+  void Cleared() {
+    Serial.println("Cleared");
+  }
+
   void process(float minPower = 0.0) {
     auto valuesList = get_decoded_radar_data();
 
+    bool noTargetFound = true;
     for (auto &v : valuesList) {
-      if (v) {
-        v->print();
-      }
+        //v->print();
+        if (v->etype() == "no") {
+            if (currentState == STATE_DETECTED || currentState == STATE_DETECTED_ONCE) {
+                Cleared();
+                currentState = STATE_CLEARED_ONCE;
+                return;
+            } else {
+                currentState = STATE_NOT_DETECTED;
+                return;
+            }
+        }
+        if (v->power >= minPower) {
+            noTargetFound = false;
+            break;
+        }
     }
+
+    switch (currentState) {
+        case STATE_NOT_DETECTED:
+            if (!noTargetFound) {
+                detected();
+                currentState = STATE_DETECTED_ONCE;
+            }
+            break;
+            
+        case STATE_DETECTED_ONCE:
+            currentState = STATE_DETECTED;
+            lastDetectionTime = millis();
+            break;
+
+        case STATE_DETECTED:
+            if (noTargetFound) {
+                if (millis() - lastDetectionTime > detectionTimeout) {
+                    Cleared();
+                    currentState = STATE_CLEARED_ONCE;
+                }
+            } else {
+                lastDetectionTime = millis();
+            }
+            break;
+            
+        case STATE_CLEARED_ONCE:
+            currentState = STATE_NOT_DETECTED;
+            break;
+    }
+
   }
-#if 0
-        String eventType = v->etype();
-        float eventValue = v->value;
-        float eventPower = v->power;
-
-        // If there's valid data and it's above the minimum power threshold
-        if (eventPower >= minPower && eventType != "no") {
-          lastUpdateTime = millis();
-          clearedPrinted = false;  // Resetting the flag here
-
-          auto speed_type = eventType == "spd" ? true : false;
-          if (!detectedPrinted || eventValue != lastValue) {
-            ep->Detected(eventType, eventValue, eventPower, true, speed_type);
-            detectedPrinted = true;
-            lastValue = eventValue;  // Update the last value
-          } else {
-            ep->Detected(eventType, eventValue, eventPower, false, speed_type);
-          }
-        }
-        else if (eventType == "no" && !clearedPrinted) {
-          ep->Cleared();
-          detectedPrinted = false;
-          clearedPrinted = true;
-        }
-      }
-
-      // Handle silence timeout
-      if ((millis() - lastUpdateTime >= silence) && !clearedPrinted) {
-        ep->Cleared();
-        detectedPrinted = false;
-        clearedPrinted = true;
-      }
-    }
-#endif
+  //ep->Detected(eventType, eventValue, eventPower, true, speed_type);
+  //  ep->Cleared();
 };
 
 
