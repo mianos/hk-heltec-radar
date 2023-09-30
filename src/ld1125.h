@@ -8,14 +8,17 @@ class LD1125 : public RadarSensor {
 public:
   LD1125(EventProc* ep) : RadarSensor(ep), SerialR(1) {
     SerialR.begin(115200, SERIAL_8N1, LD_RX, LD_TX);
-    for (auto kk = 0; kk < 5; kk++) {
+    for (auto kk = 0; kk < 3; kk++) {
+      delay(500);
       for (auto ii = 0; ii < 10000; ii++) {
         if (!SerialR.available()) {
           break;
         }
         char c = (char)SerialR.read();
+        Serial.printf("%c", c);
       }
       SerialR.printf("test_mode=1\r\n");
+      Serial.printf("trying test mode\n");
     }
   }
 private:

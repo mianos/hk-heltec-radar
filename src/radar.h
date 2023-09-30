@@ -15,30 +15,17 @@ struct Value {
   virtual void print() {
     Serial.printf("un-overridden '%s' dpower %g\n", etype(), power);
   }
-  virtual float value() {
-    return 0.0;
-  }
   Value(float power=0.0) : power(power) {}
 };
 
 struct Movement : public Value {
   float distance = 0.0;
   const char* etype() override { return "mov"; }
-  float value() {
-    return distance;
-  }
   Movement(float distance, float power=0.0) : Value(power), distance(distance) {}
-};
-
-struct Speed : public Value {
-  float speed = 0.0;
-  const char* etype() override { return "spd"; }
-  Speed(float speed) : speed(speed) {}
-  float value() {
-    return speed;
+  virtual void print() {
+    Serial.printf("mov distance %2.1f power %2.1f\n", distance, power);
   }
 };
-
 
 struct Occupancy : public Value {
   float distance = 0.0;
@@ -47,7 +34,21 @@ struct Occupancy : public Value {
     return distance;
   }
   Occupancy(float distance, float power=0.0) : Value(power), distance(distance) {}
+  virtual void print() {
+    Serial.printf("occ distance %2.1f power %2.1f\n", distance, power);
+  }
 };
+
+
+struct Speed : public Value {
+  float speed = 0.0;
+  const char* etype() override { return "spd"; }
+  Speed(float speed) : speed(speed) {}
+  virtual void print() {
+    Serial.printf("spd %2.2f\n", speed);
+  }
+};
+
 
 struct Range : public Value {
   float x = 0.0;
@@ -64,6 +65,9 @@ struct Range : public Value {
 
 struct NoTarget : public Value {
   const char* etype() override { return "no"; }
+  virtual void print() {
+    Serial.printf("no target\n");
+  }
 };
 
 class RadarSensor {
