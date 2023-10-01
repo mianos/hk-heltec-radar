@@ -16,8 +16,25 @@ void RadarSensor::Cleared() {
     Serial.println("Cleared");
 }
 
+
 bool RadarSensor::areValuesListsSame(const std::vector<std::unique_ptr<Value>>& list1,
                                      const std::vector<std::unique_ptr<Value>>& list2) {
+    if (list1.empty() && list2.empty()) return true;
+
+    if (list1.empty()) {
+        for (const auto& v : list2) {
+            if (v->etype() != "no") return false;
+        }
+        return true;
+    }
+
+    if (list2.empty()) {
+        for (const auto& v : list1) {
+            if (v->etype() != "no") return false;
+        }
+        return true;
+    }
+
     if (list1.size() != list2.size()) return false;
 
     for (size_t i = 0; i < list1.size(); i++) {
@@ -31,7 +48,7 @@ void RadarSensor::process(float minPower) {
     auto valuesList = get_decoded_radar_data();
 
     if (areValuesListsSame(valuesList, lastValuesList)) {
-        return; // Exit early if the lists are the same
+      return;
     }
 
     bool noTargetFound = true;
@@ -45,6 +62,8 @@ void RadarSensor::process(float minPower) {
                 currentState = STATE_NOT_DETECTED;
                 return;
             }
+        } else {
+          v->print();
         }
         if (v->power >= minPower) {
             noTargetFound = false;
@@ -81,8 +100,10 @@ void RadarSensor::process(float minPower) {
             break;
     }
 
-   lastValuesList.clear();
-    for (auto& v : valuesList) {
-        lastValuesList.push_back(v->clone());
-    }
+   if (!valuesList.empty()) {
+     lastValuesList.clear();
+      for (auto& v : valuesList) {
+          lastValuesList.push_back(v->clone());
+      }
+   }
 }
