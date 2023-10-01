@@ -8,14 +8,6 @@ void RadarSensor::set_silence_period(int silence_period) {
     detectionTimeout = silence_period;
 }
 
-void RadarSensor::detected() {
-    Serial.println("Detected");
-}
-
-void RadarSensor::Cleared() {
-    Serial.println("Cleared");
-}
-
 
 bool RadarSensor::areValuesListsSame(const std::vector<std::unique_ptr<Value>>& list1,
                                      const std::vector<std::unique_ptr<Value>>& list2) {
@@ -55,17 +47,20 @@ void RadarSensor::process(float minPower) {
     for (auto &v : valuesList) {
         if (v->etype() == "no") {
             if (currentState == STATE_DETECTED || currentState == STATE_DETECTED_ONCE) {
-                Cleared();
+                ep->Cleared();
                 currentState = STATE_CLEARED_ONCE;
                 return;
             } else {
                 currentState = STATE_NOT_DETECTED;
                 return;
             }
-        } else {
+        }
+#if 0
+        else {
           v->print();
         }
-        if (v->power >= minPower) {
+#endif
+        if (v->get_power() >= minPower) {
             noTargetFound = false;
             break;
         }
@@ -74,7 +69,7 @@ void RadarSensor::process(float minPower) {
     switch (currentState) {
         case STATE_NOT_DETECTED:
             if (!noTargetFound) {
-                detected();
+                ep->Detected();
                 currentState = STATE_DETECTED_ONCE;
             }
             break;
@@ -87,7 +82,7 @@ void RadarSensor::process(float minPower) {
         case STATE_DETECTED:
             if (noTargetFound) {
                 if (millis() - lastDetectionTime > detectionTimeout) {
-                    Cleared();
+                    ep->Cleared();
                     currentState = STATE_CLEARED_ONCE;
                 }
             } else {

@@ -2,28 +2,28 @@
 
 class EventProc {
 public:
-  virtual void Detected(String& type, float value, float power, bool entry, bool speed_type=false) = 0;
+  virtual void Detected() = 0;
   virtual void Cleared() = 0;
 };
 
 struct Value {
-  float power;
   virtual const char* etype() const = 0;
-  virtual void print() const {
-    Serial.printf("un-overridden '%s' power %g\n", etype(), power);
-  }
-  Value(float power=0.0) : power(power) {}
-
+  virtual void print() const { Serial.printf("un-overridden '%s'\n", etype()); }
   virtual std::unique_ptr<Value> clone() const = 0;
   virtual bool isEqual(const Value& other) const = 0;
+  virtual float get_distance() { return 0.0; }
+  virtual float get_power() { return 0.0; }
 };
 
 struct Movement : public Value {
   float distance = 0.0;
+  float power = 0.0;
 
   const char* etype() const override { return "mov"; }
   
-  Movement(float distance, float power=0.0) : Value(power), distance(distance) {}
+  Movement(float distance, float power=0.0) : distance(distance), power(power) {}
+  virtual float get_distance() { return distance; }
+  virtual float get_power() { return power; }
 
   virtual void print() const override {
     Serial.printf("mov distance %2.1f power %2.1f\n", distance, power);
@@ -41,10 +41,13 @@ struct Movement : public Value {
 
 struct Occupancy : public Value {
   float distance = 0.0;
+  float power = 0.0;
 
   const char* etype() const override { return "occ"; }
 
-  Occupancy(float distance, float power=0.0) : Value(power), distance(distance) {}
+  Occupancy(float distance, float power=0.0) : distance(distance), power(power) {}
+  virtual float get_distance() { return distance; }
+  virtual float get_power() { return power; }
 
   virtual void print() const override {
     Serial.printf("occ distance %2.1f power %2.1f\n", distance, power);
@@ -77,7 +80,7 @@ struct Speed : public Value {
 
   bool isEqual(const Value& other) const override {
     const Speed& o = static_cast<const Speed&>(other);
-    return speed == o.speed && power == o.power;
+    return speed == o.speed;
   }
 };
 
@@ -101,7 +104,7 @@ struct Range : public Value {
 
   bool isEqual(const Value& other) const override {
     const Range& o = static_cast<const Range&>(other);
-    return x == o.x && y == o.y && speed == o.speed && reference == o.reference && power == o.power;
+    return x == o.x && y == o.y && speed == o.speed && reference == o.reference;
   }
 };
 
@@ -117,8 +120,7 @@ struct NoTarget : public Value {
   }
 
   bool isEqual(const Value& other) const override {
-    const NoTarget& o = static_cast<const NoTarget&>(other);
-    return power == o.power;
+    return true;
   }
 };
 
