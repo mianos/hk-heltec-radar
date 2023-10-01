@@ -32,8 +32,9 @@ public:
   LocalEP(Display *display, RadarMqtt *mqtt) : display(display), mqtt(mqtt) {
   }
 
-  virtual void Detected() { // String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
+  virtual void Detected(Value *vv) { // String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
     Serial.printf("Detected\n");
+    vv->print();
 #if 0
     display->show_large_distance(distanceValue, 10, 8);
     display->show_power_line(strengthValue);

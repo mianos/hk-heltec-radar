@@ -1,11 +1,5 @@
 #pragma once
 
-class EventProc {
-public:
-  virtual void Detected() = 0;
-  virtual void Cleared() = 0;
-};
-
 struct Value {
   virtual const char* etype() const = 0;
   virtual void print() const { Serial.printf("un-overridden '%s'\n", etype()); }
@@ -124,4 +118,10 @@ struct NoTarget : public Value {
   }
 };
 
+
+class EventProc {
+public:
+  virtual void Detected(Value *vv) = 0;
+  virtual void Cleared() = 0;
+};
 

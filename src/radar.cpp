@@ -69,7 +69,11 @@ void RadarSensor::process(float minPower) {
     switch (currentState) {
         case STATE_NOT_DETECTED:
             if (!noTargetFound) {
-                ep->Detected();
+                for (auto &v : valuesList) {
+                    if (v->etype() != "no") {
+                      ep->Detected(v.get());  // pass unique_ptr? 
+                    }
+                }
                 currentState = STATE_DETECTED_ONCE;
             }
             break;
