@@ -28,6 +28,8 @@ bool network_up{false};
 class LocalEP : public EventProc {
   Display* display;
   RadarMqtt *mqtt;
+  uint32_t lastTrackingUpdateTime = 0;
+
 public:
   LocalEP(Display *display, RadarMqtt *mqtt) : display(display), mqtt(mqtt) {
   }
@@ -35,6 +37,9 @@ public:
   virtual void Detected(Value *vv) { // String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
     Serial.printf("Detected: ");
     vv->print();
+    if (network_up) {
+      mqtt->mqtt_update_presence(true);
+    }
 #if 0
     display->show_large_distance(distanceValue, 10, 8);
     display->show_power_line(strengthValue);
@@ -55,8 +60,11 @@ public:
       mqtt->mqtt_update_presence(false);
     }
   }
+
   virtual void TrackingUpdate(Value *vv) {
-    if (mqtt->tracking_interval) {
+    uint32_t currentMillis = millis();
+    if (mqtt->tracking_interval && (currentMillis - lastTrackingUpdateTime >= mqtt->tracking_interval)) {
+      lastTrackingUpdateTime = currentMillis;  // Update the last update time
       Serial.printf("tracking: ");
       vv->print();
     }

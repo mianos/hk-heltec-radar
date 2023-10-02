@@ -55,21 +55,20 @@ void RadarSensor::process(float minPower) {
                 return;
             }
         }
-        else {
-          ep->TrackingUpdate(v.get());
-        }
         if (v->get_power() >= minPower) {
             noTargetFound = false;
             break;
         }
     }
-
+    // If tracking is on, don't send a second update if a detection event is sent
+    bool sent_detected_event = false;
     switch (currentState) {
         case STATE_NOT_DETECTED:
             if (!noTargetFound) {
                 for (auto &v : valuesList) {
                     if (v->etype() != "no") {
-                      ep->Detected(v.get());  // pass unique_ptr? 
+                      ep->Detected(v.get());  // pass unique_ptr
+                      sent_detected_event = true;
                     }
                 }
                 currentState = STATE_DETECTED_ONCE;
@@ -100,7 +99,10 @@ void RadarSensor::process(float minPower) {
    if (!valuesList.empty()) {
      lastValuesList.clear();
       for (auto& v : valuesList) {
-          lastValuesList.push_back(v->clone());
+        lastValuesList.push_back(v->clone());
+        if (!sent_detected_event) {
+          ep->TrackingUpdate(v.get());
+        }
       }
    }
 }
