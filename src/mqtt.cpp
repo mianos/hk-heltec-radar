@@ -87,39 +87,23 @@ void RadarMqtt::handle() {
 }
 
 
-void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, float strengthValue, bool speed_type) {
+void RadarMqtt::mqtt_update_presence(bool entry, const Value *vv) {
   if (!client.connected()) {
     if (!reconnect()) {
       return;
     }
   }
-
-//  if (other && !report_ranges) {
-//    return;
-//  }
-  unsigned long currentTime = millis();
-  if (currentTime - lastTimeCalled < interval) {
-    return;
-  }
-
-  StaticJsonDocument<200> doc;
-  doc["entry"] = entry || other;
-  if (distance != 0.0) {
-    auto val = (int)(distance * 100.0 + 0.5) / 100.0;
-    if (speed_type) {
-      doc["speed"] = val;
-    } else {
-      doc["distance"] = val;
-    }
-  }
-  if (strengthValue != 0.0) {
-    doc["strength"] = (int)(strengthValue * 10.0 + 0.5) / 10.0;
-  }
+  StaticJsonDocument<300> doc;
+  doc["entry"] = entry;
   doc["time"] = DateTime.toISOString();
+  if (entry) {
+    vv->toJson(doc);
+  }
   String status_topic = "tele/" + settings->sensorName + "/presence";
   String output;
   serializeJson(doc, output);
+  printf("'%s'\n", output.c_str());
   client.publish(status_topic.c_str(), output.c_str());
-  lastTimeCalled = currentTime;
+
 }
 

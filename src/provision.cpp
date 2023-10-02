@@ -49,6 +49,9 @@ void SysProvEvent(arduino_event_t *sys_event)
     case ARDUINO_EVENT_WIFI_SCAN_DONE:
         printf("Prov: scan done\n");
         break;
+    case SYSTEM_EVENT_STA_START:
+        printf("Station start\n");
+        break;
     default:
         Serial.printf("Some other event %d\n", sys_event->event_id);
         break;
@@ -63,10 +66,20 @@ constexpr int PROG_BUTTON_PIN = BOOT_BUTTON;
 constexpr int PROG_BUTTON_PIN = 0; // GPIO0
 #endif
 
+String getMacAddress() {
+  uint8_t mac[6];
+  WiFi.macAddress(mac);
+  char macStr[18] = { 0 };
+  sprintf(macStr, "%02X:%02X:%02X:%02X:%02X:%02X",  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  return String(macStr);
+}
+
 void wifi_connect(Display* display) {
 //  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   WiFi.mode(WIFI_STA);
   WiFi.onEvent(SysProvEvent);
+  WiFi.disconnect();  // Disconnect from the WiFi
+  Serial.printf("mac '%s'\n", getMacAddress().c_str());
   String name = String("faba_");
   name += String(random(0xffff), HEX);
   printf("prov name: %s\n",name.c_str());

@@ -1,12 +1,16 @@
 #pragma once
+#include <ArduinoJson.h>
 
 struct Value {
-  virtual const char* etype() const = 0;
+  virtual const char* etype() const { return "und"; }
   virtual void print() const { Serial.printf("un-overridden '%s'\n", etype()); }
   virtual std::unique_ptr<Value> clone() const = 0;
   virtual bool isEqual(const Value& other) const = 0;
-  virtual float get_distance() { return 0.0; }
-  virtual float get_power() { return 0.0; }
+  virtual float get_main() const { return 0.0; }
+  virtual float get_power() const { return 0.0; }
+  virtual void toJson(JsonDocument &doc) const {
+    doc["type"] = etype();
+  }
 };
 
 struct Movement : public Value {
@@ -16,7 +20,7 @@ struct Movement : public Value {
   const char* etype() const override { return "mov"; }
   
   Movement(float distance, float power=0.0) : distance(distance), power(power) {}
-  virtual float get_distance() { return distance; }
+  virtual float get_main() { return distance; }
   virtual float get_power() { return power; }
 
   virtual void print() const override {
@@ -31,6 +35,11 @@ struct Movement : public Value {
     const Movement& o = static_cast<const Movement&>(other);
     return distance == o.distance && power == o.power;
   }
+  virtual void toJson(JsonDocument &doc) const {
+    Value::toJson(doc);
+    doc["distance"] = distance;
+    doc["power"] = power;
+  }
 };
 
 struct Occupancy : public Value {
@@ -40,7 +49,7 @@ struct Occupancy : public Value {
   const char* etype() const override { return "occ"; }
 
   Occupancy(float distance, float power=0.0) : distance(distance), power(power) {}
-  virtual float get_distance() { return distance; }
+  virtual float get_main() { return distance; }
   virtual float get_power() { return power; }
 
   virtual void print() const override {
@@ -55,6 +64,11 @@ struct Occupancy : public Value {
     const Occupancy& o = static_cast<const Occupancy&>(other);
     return distance == o.distance && power == o.power;
   }
+  virtual void toJson(JsonDocument &doc) const {
+    Value::toJson(doc);
+    doc["distance"] = distance;
+    doc["power"] = power;
+  }
 };
 
 struct Speed : public Value {
@@ -63,6 +77,8 @@ struct Speed : public Value {
   const char* etype() const override { return "spd"; }
   
   Speed(float speed) : speed(speed) {}
+
+  virtual float get_main() { return speed; }
 
   virtual void print() const override {
     Serial.printf("spd %2.2f\n", speed);
@@ -76,6 +92,10 @@ struct Speed : public Value {
     const Speed& o = static_cast<const Speed&>(other);
     return speed == o.speed;
   }
+  virtual void toJson(JsonDocument &doc) const {
+    Value::toJson(doc);
+    doc["speed"] = speed;
+  }
 };
 
 struct Range : public Value {
@@ -87,6 +107,7 @@ struct Range : public Value {
   const char* etype() const override { return "rng"; }
 
   Range(float x, float y, float speed, int reference=0) : x(x), y(y), speed(speed), reference(reference) {}
+  virtual float get_main() { return speed; }
 
   virtual void print() const override {
     Serial.printf("speed %1.2f x pos %1.2f Y pos %1.2f %2d\n", speed, x, y, reference);
@@ -99,6 +120,13 @@ struct Range : public Value {
   bool isEqual(const Value& other) const override {
     const Range& o = static_cast<const Range&>(other);
     return x == o.x && y == o.y && speed == o.speed && reference == o.reference;
+  }
+  virtual void toJson(JsonDocument &doc) const {
+    Value::toJson(doc);
+    doc["x"] = x;
+    doc["y"] = y;
+    doc["speed"] = speed;
+    doc["reference"] = reference;
   }
 };
 

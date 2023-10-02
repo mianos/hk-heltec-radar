@@ -15,10 +15,8 @@ public:
           break;
         }
         char c = (char)SerialR.read();
-        Serial.printf("%c", c);
       }
       SerialR.printf("test_mode=1\r\n");
-      Serial.printf("trying test mode\n");
     }
   }
 private:

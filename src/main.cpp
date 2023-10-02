@@ -36,24 +36,18 @@ public:
 
   virtual void Detected(Value *vv) { // String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
     Serial.printf("Detected: ");
-    vv->print();
-    if (network_up) {
-      mqtt->mqtt_update_presence(true);
+    if (!vv) {
+      Serial.printf("NULL?\n");
+      return;
     }
-#if 0
-    display->show_large_distance(distanceValue, 10, 8);
-    display->show_power_line(strengthValue);
+    display->show_large_distance(vv->get_main(), 10, 8);
+    display->show_power_line(vv->get_power());
     if (network_up) {
-      if (entry) {
-        mqtt->mqtt_update_presence(entry, false, distanceValue, strengthValue, speed_type);
-      } else {
-        mqtt->mqtt_update_presence(entry, true, distanceValue, strengthValue);
-      }
+      mqtt->mqtt_update_presence(true, vv);
     }
-#endif
   }
   virtual void Cleared() {
-    Serial.printf("Cleared\n");
+    Serial.printf("Cleared: ");
     display->show_large_distance(0.0, 10, 8);
     display->show_power_line(0);
     if (network_up) {
