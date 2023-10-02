@@ -7,6 +7,10 @@
 #include "settings.h"
 #include "mqtt.h"
 
+double rr(double value) {
+    return (int)(value * 100 + 0.5) / 100.0;
+}
+
 void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
   auto topic = String(topic_str);
   auto splitter = StringSplitter(topic, '/', 4);

@@ -1,6 +1,8 @@
 #pragma once
 #include <ArduinoJson.h>
 
+extern double rr(double value);
+
 struct Value {
   virtual const char* etype() const { return "und"; }
   virtual void print() const { Serial.printf("un-overridden '%s'\n", etype()); }
@@ -20,7 +22,7 @@ struct Movement : public Value {
   const char* etype() const override { return "mov"; }
   
   Movement(float distance, float power=0.0) : distance(distance), power(power) {}
-  virtual float get_main() { return distance; }
+  virtual float get_main() { return rr(distance); }
   virtual float get_power() { return power; }
 
   virtual void print() const override {
@@ -37,8 +39,8 @@ struct Movement : public Value {
   }
   virtual void toJson(JsonDocument &doc) const {
     Value::toJson(doc);
-    doc["distance"] = distance;
-    doc["power"] = power;
+    doc["distance"] = rr(distance);
+    doc["power"] = rr(power);
   }
 };
 
@@ -66,8 +68,8 @@ struct Occupancy : public Value {
   }
   virtual void toJson(JsonDocument &doc) const {
     Value::toJson(doc);
-    doc["distance"] = distance;
-    doc["power"] = power;
+    doc["distance"] = rr(distance);
+    doc["power"] = rr(power);
   }
 };
 
@@ -94,7 +96,7 @@ struct Speed : public Value {
   }
   virtual void toJson(JsonDocument &doc) const {
     Value::toJson(doc);
-    doc["speed"] = speed;
+    doc["speed"] = rr(speed);
   }
 };
 
@@ -123,9 +125,9 @@ struct Range : public Value {
   }
   virtual void toJson(JsonDocument &doc) const {
     Value::toJson(doc);
-    doc["x"] = x;
-    doc["y"] = y;
-    doc["speed"] = speed;
+    doc["x"] = rr(x);
+    doc["y"] = rr(y);
+    doc["speed"] = rr(speed);
     doc["reference"] = reference;
   }
 };

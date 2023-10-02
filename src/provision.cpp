@@ -52,6 +52,9 @@ void SysProvEvent(arduino_event_t *sys_event)
     case SYSTEM_EVENT_STA_START:
         printf("Station start\n");
         break;
+    case SYSTEM_EVENT_STA_CONNECTED:
+        printf("Station connected\n");
+        break;
     default:
         Serial.printf("Some other event %d\n", sys_event->event_id);
         break;
