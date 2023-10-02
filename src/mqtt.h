@@ -9,10 +9,10 @@
 struct RadarMqtt {
   WiFiClient espClient;
   PubSubClient client;
-  bool report_ranges = false;
-  RadarSensor* radar = nullptr; // Use nullptr instead of 0 for pointer initialization
+  RadarSensor* radar = nullptr;
   Display* display;
   SettingsManager *settings;
+  int tracking_interval = 0;
 
   unsigned long lastTimeCalled = 0;  // Store the last time the function was called
   const unsigned long interval = 250;  // Interval in milliseconds (1000 ms / 4 = 250 ms)

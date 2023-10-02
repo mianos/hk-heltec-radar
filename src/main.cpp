@@ -33,7 +33,7 @@ public:
   }
 
   virtual void Detected(Value *vv) { // String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
-    Serial.printf("Detected\n");
+    Serial.printf("Detected: ");
     vv->print();
 #if 0
     display->show_large_distance(distanceValue, 10, 8);
@@ -55,6 +55,12 @@ public:
       mqtt->mqtt_update_presence(false);
     }
   }
+  virtual void TrackingUpdate(Value *vv) {
+    if (mqtt->tracking_interval) {
+      Serial.printf("tracking: ");
+      vv->print();
+    }
+  }
 };
 
 RadarSensor *radarSensor;
@@ -74,10 +80,9 @@ void setup() {
 
   settings = new SettingsManager{};
   display->scroller_start();
-  mqtt = new RadarMqtt{display, settings};
 
+  mqtt = new RadarMqtt{display, settings};
   auto *lep = new LocalEP{display, mqtt};
-  Serial.printf("Local EP started\n");
 
   if (settings->radarType == "ld2411") {
     radarSensor = new LD2411{lep};

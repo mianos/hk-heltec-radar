@@ -123,5 +123,6 @@ class EventProc {
 public:
   virtual void Detected(Value *vv) = 0;
   virtual void Cleared() = 0;
+  virtual void TrackingUpdate(Value *cc) = 0;
 };
 

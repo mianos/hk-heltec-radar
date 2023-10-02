@@ -33,17 +33,18 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
     String output;
     serializeJson(jpl, output);
     auto dest = splitter.getItemAtIndex(itemCount - 1);
-    if (dest == "distance") {
-      if (jpl.containsKey("report")) {
-        report_ranges = jpl["report"].as<bool>();
-        display->taf("reporting  ranges: %s\n", report_ranges ? "true" : "false");
+    if (dest == "tracking") {
+      if (jpl.containsKey("interval")) {
+        tracking_interval = jpl["interval"].as<int>();
+        display->taf("Setting tracking interval to %d\n", tracking_interval);
       }
     }
   }
 }
 
 
-RadarMqtt::RadarMqtt(Display* display, SettingsManager *settings) : client(espClient), display(display), settings(settings) {
+RadarMqtt::RadarMqtt(Display* display, SettingsManager *settings)
+    : client(espClient), display(display), settings(settings) {
   client.setServer(settings->mqttServer.c_str(), atoi(settings->mqttPort.c_str()));
   client.setCallback([this](char* topic_str, byte* payload, unsigned int length) {
     callback(topic_str, payload, length);
@@ -92,9 +93,10 @@ void RadarMqtt::mqtt_update_presence(bool entry, bool other, float distance, flo
       return;
     }
   }
-  if (other && !report_ranges) {
-    return;
-  }
+
+//  if (other && !report_ranges) {
+//    return;
+//  }
   unsigned long currentTime = millis();
   if (currentTime - lastTimeCalled < interval) {
     return;

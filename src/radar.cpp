@@ -55,11 +55,9 @@ void RadarSensor::process(float minPower) {
                 return;
             }
         }
-#if 0
         else {
-          v->print();
+          ep->TrackingUpdate(v.get());
         }
-#endif
         if (v->get_power() >= minPower) {
             noTargetFound = false;
             break;
