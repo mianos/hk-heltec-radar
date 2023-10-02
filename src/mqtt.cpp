@@ -50,6 +50,8 @@ void RadarMqtt::callback(char* topic_str, byte* payload, unsigned int length) {
 RadarMqtt::RadarMqtt(Display* display, SettingsManager *settings)
     : client(espClient), display(display), settings(settings) {
   client.setServer(settings->mqttServer.c_str(), atoi(settings->mqttPort.c_str()));
+  tracking_interval = settings->tracking;
+  printf("Setting tracking interval %d\n", tracking_interval);
   client.setCallback([this](char* topic_str, byte* payload, unsigned int length) {
     callback(topic_str, payload, length);
   });

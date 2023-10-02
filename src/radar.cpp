@@ -9,39 +9,8 @@ void RadarSensor::set_silence_period(int silence_period) {
 }
 
 
-bool RadarSensor::areValuesListsSame(const std::vector<std::unique_ptr<Value>>& list1,
-                                     const std::vector<std::unique_ptr<Value>>& list2) {
-    if (list1.empty() && list2.empty()) return true;
-
-    if (list1.empty()) {
-        for (const auto& v : list2) {
-            if (v->etype() != "no") return false;
-        }
-        return true;
-    }
-
-    if (list2.empty()) {
-        for (const auto& v : list1) {
-            if (v->etype() != "no") return false;
-        }
-        return true;
-    }
-
-    if (list1.size() != list2.size()) return false;
-
-    for (size_t i = 0; i < list1.size(); i++) {
-        if (!list1[i]->isEqual(*list2[i])) return false;
-    }
-
-    return true;
-}
-
 void RadarSensor::process(float minPower) {
     auto valuesList = get_decoded_radar_data();
-
-    if (areValuesListsSame(valuesList, lastValuesList)) {
-      return;
-    }
 
     bool noTargetFound = true;
     for (auto &v : valuesList) {
@@ -96,11 +65,9 @@ void RadarSensor::process(float minPower) {
             break;
     }
 
-   if (!valuesList.empty()) {
-     lastValuesList.clear();
+    if (!sent_detected_event) {
       for (auto& v : valuesList) {
-        lastValuesList.push_back(v->clone());
-        if (!sent_detected_event) {
+        if (v->etype() != "no") {
           ep->TrackingUpdate(v.get());
         }
       }
