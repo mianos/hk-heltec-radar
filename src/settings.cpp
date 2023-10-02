@@ -65,6 +65,11 @@ void SettingsManager::updateAndSaveSettings(AsyncWebServerRequest* request) {
     radarType = request->arg("RADAR_TYPE");
     mqttPort = request->arg("MQTT_PORT");
     sensorName = request->arg("SENSOR_NAME");
+    if (request->hasArg("TRACKING")) {
+      tracking = true;
+    } else {
+      tracking = false;
+    } 
     saveSettings();
 }
 
@@ -93,6 +98,7 @@ void SettingsManager::loadSettings() {
     radarType = doc["radar_type"].as<String>();
     mqttPort = doc["mqtt_port"].as<String>();
     sensorName = doc["sensor_name"].as<String>();
+    tracking = doc["tracking"].as<bool>();
     configFile.close();
 }
 
@@ -102,6 +108,7 @@ void SettingsManager::saveSettings() {
     doc["radar_type"] = radarType;
     doc["mqtt_port"] = mqttPort;
     doc["sensor_name"] = sensorName;
+    doc["tracking"] = tracking;
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
@@ -118,6 +125,7 @@ void SettingsManager::loadDefaultSettings() {
     radarType = "default_type";
     mqttPort = "1883";
     sensorName = "ldnoradar";
+    tracking = false;
 }
 
 // Implementation of private methods
@@ -132,6 +140,8 @@ String SettingsManager::processor(const String& var) {
         return sensorName;
     } else if (var == "MESSAGE") {
         return message;
+    } else if (var == "TRACKING") {
+        return tracking ? "checked" : "";
     }
     return String();
 }

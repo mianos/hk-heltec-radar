@@ -23,6 +23,7 @@ public:
     String radarType;
     String mqttPort;
     String sensorName;
+    bool tracking;
 
 private:
     AsyncWebServer server;

@@ -1,1 +1,1 @@
-{"mqtt_server":"mqtt2.mianos.com","radar_type":"ldnoradar", "mqtt_port":"1883","sensor_name":"radar/door"}
+{"mqtt_server":"mqtt2.mianos.com","radar_type":"ldnoradar", "mqtt_port":"1883","sensor_name":"radar/door", "tracking": false}
