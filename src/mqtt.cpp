@@ -106,8 +106,21 @@ void RadarMqtt::mqtt_update_presence(bool entry, const Value *vv) {
   String status_topic = "tele/" + settings->sensorName + "/presence";
   String output;
   serializeJson(doc, output);
-  printf("'%s'\n", output.c_str());
   client.publish(status_topic.c_str(), output.c_str());
+}
 
+void RadarMqtt::mqtt_track(const Value *vv) {
+  if (!client.connected()) {
+    if (!reconnect()) {
+      return;
+    }
+  }
+  StaticJsonDocument<300> doc;
+  doc["time"] = DateTime.toISOString();
+  vv->toJson(doc);
+  String status_topic = "tele/" + settings->sensorName + "/tracking";
+  String output;
+  serializeJson(doc, output);
+  client.publish(status_topic.c_str(), output.c_str());
 }
 

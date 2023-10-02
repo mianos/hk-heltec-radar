@@ -15,7 +15,7 @@ void SysProvEvent(arduino_event_t *sys_event)
         Serial.println(IPAddress(sys_event->event_info.got_ip.ip_info.ip.addr));
         break;
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-        Serial.println("\nDisconnected. Connecting to the AP again... ");
+        Serial.println("\nWHAT?  Disconnected. Connecting to the AP again... ");
         break;
     case ARDUINO_EVENT_PROV_START:
         Serial.println("\nProvisioning started\nGive Credentials of your access point using \" Android app \"");
@@ -80,6 +80,10 @@ String getMacAddress() {
 void wifi_connect(Display* display) {
 //  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   WiFi.mode(WIFI_STA);
+#if defined(SHIT_RF_WORKAROUND)
+ WiFi.setTxPower(WIFI_POWER_8_5dBm); // -61 dBm
+ // WiFi.setTxPower(WIFI_POWER_11dBm); // -56
+#endif
   WiFi.onEvent(SysProvEvent);
   WiFi.disconnect();  // Disconnect from the WiFi
   Serial.printf("mac '%s'\n", getMacAddress().c_str());
@@ -107,6 +111,7 @@ void wifi_connect(Display* display) {
   while (WiFi.status() != WL_CONNECTED) {
     display->taf("Connecting to WiFi...\n");
     display->scroll_now();
+    delay(2000);
   }
   Serial.printf("COnnected\n");
 }

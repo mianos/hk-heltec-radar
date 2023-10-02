@@ -35,32 +35,31 @@ public:
   }
 
   virtual void Detected(Value *vv) { // String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
-    Serial.printf("Detected: ");
-    if (!vv) {
-      Serial.printf("NULL?\n");
-      return;
-    }
     display->show_large_distance(vv->get_main(), 10, 8);
     display->show_power_line(vv->get_power());
-    if (network_up) {
-      mqtt->mqtt_update_presence(true, vv);
+    if (!network_up) {
+      return;
     }
+    mqtt->mqtt_update_presence(true, vv);
   }
+
   virtual void Cleared() {
-    Serial.printf("Cleared: ");
     display->show_large_distance(0.0, 10, 8);
     display->show_power_line(0);
-    if (network_up) {
-      mqtt->mqtt_update_presence(false);
+    if (!network_up) {
+      return;
     }
+    mqtt->mqtt_update_presence(false);
   }
 
   virtual void TrackingUpdate(Value *vv) {
+    if (!network_up) {
+      return;
+    }
     uint32_t currentMillis = millis();
     if (mqtt->tracking_interval && (currentMillis - lastTrackingUpdateTime >= mqtt->tracking_interval)) {
+      mqtt->mqtt_track(vv);
       lastTrackingUpdateTime = currentMillis;  // Update the last update time
-      Serial.printf("tracking: ");
-      vv->print();
     }
   }
 };
