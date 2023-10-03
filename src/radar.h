@@ -3,12 +3,13 @@
 #include <vector>
 #include <memory>
 #include "events.h"
+#include "settings.h"
 
 class RadarSensor {
+  SettingsManager* settings;
 public:
-    RadarSensor(EventProc* ep);
+    RadarSensor(EventProc* ep, SettingsManager* settings);
     virtual std::vector<std::unique_ptr<Value>> get_decoded_radar_data() = 0;
-    void set_silence_period(int silence_period);
     void process(float minPower = 0.0);
     bool tracking = false;
 
@@ -23,6 +24,5 @@ protected:
     EventProc* ep;
     DetectionState currentState = STATE_NOT_DETECTED;
     uint32_t lastDetectionTime = 0;
-    uint32_t detectionTimeout = 2000;
 };
 

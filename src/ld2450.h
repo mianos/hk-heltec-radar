@@ -50,7 +50,7 @@ class LD2450 : public RadarSensor {
     }
 
 public:
-    LD2450(EventProc* ep) : RadarSensor(ep), SerialR(1) {
+    LD2450(EventProc* ep, SettingsManager *settings) : RadarSensor(ep, settings), SerialR(1) {
       SerialR.begin(256000, SERIAL_8N1, LD_RX, LD_TX);
     }
 

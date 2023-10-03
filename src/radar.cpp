@@ -2,11 +2,7 @@
 
 #include "radar.h"
 
-RadarSensor::RadarSensor(EventProc* ep) : ep(ep) {}
-
-void RadarSensor::set_silence_period(int silence_period) {
-    detectionTimeout = silence_period;
-}
+RadarSensor::RadarSensor(EventProc* ep, SettingsManager* settings) : ep(ep), settings(settings) {}
 
 
 void RadarSensor::process(float minPower) {
@@ -51,7 +47,7 @@ void RadarSensor::process(float minPower) {
 
         case STATE_DETECTED:
             if (noTargetFound) {
-                if (millis() - lastDetectionTime > detectionTimeout) {
+                if (millis() - lastDetectionTime > settings->detectionTimeout) {
                     ep->Cleared();
                     currentState = STATE_CLEARED_ONCE;
                 }

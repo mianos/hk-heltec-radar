@@ -65,11 +65,8 @@ void SettingsManager::updateAndSaveSettings(AsyncWebServerRequest* request) {
   radarType = request->arg("RADAR_TYPE");
   mqttPort = request->arg("MQTT_PORT");
   sensorName = request->arg("SENSOR_NAME");
-  if (request->hasArg("TRACKING")) {
-      tracking = request->arg("TRACKING").toInt();
-  } else {
-      tracking = 0; // or some other default or error value
-  }
+  tracking = request->arg("TRACKING").toInt();
+  detectionTimeout = request->arg("DETECTION_TIMEOUT").toInt();
   saveSettings();
 }
 
@@ -99,6 +96,7 @@ void SettingsManager::loadSettings() {
     mqttPort = doc["mqtt_port"].as<String>();
     sensorName = doc["sensor_name"].as<String>();
     tracking = doc["tracking"].as<int>();
+    detectionTimeout = doc["detection_timeout"].as<int>();
     configFile.close();
 }
 
@@ -109,6 +107,7 @@ void SettingsManager::saveSettings() {
     doc["mqtt_port"] = mqttPort;
     doc["sensor_name"] = sensorName;
     doc["tracking"] = tracking;
+    doc["detection_timeout"] = detectionTimeout;
 
     File configFile = SPIFFS.open("/config.json", "w");
     if (!configFile) {
@@ -126,6 +125,7 @@ void SettingsManager::loadDefaultSettings() {
     mqttPort = "1883";
     sensorName = "ldnoradar";
     tracking = 0;
+    detectionTimeout = 2000;
 }
 
 // Implementation of private methods
@@ -142,6 +142,8 @@ String SettingsManager::processor(const String& var) {
         return message;
     } else if (var == "TRACKING_RATE") {
         return String(tracking);
+    } else if (var == "DETECTION_TIMEOUT") {
+        return String(detectionTimeout);
     }
     return String();
 }

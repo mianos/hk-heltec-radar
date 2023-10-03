@@ -24,6 +24,7 @@ public:
     String mqttPort;
     String sensorName;
     int tracking;
+    int detectionTimeout;
 
 private:
     AsyncWebServer server;
