@@ -29,9 +29,10 @@ class LocalEP : public EventProc {
   Display* display;
   RadarMqtt *mqtt;
   uint32_t lastTrackingUpdateTime = 0;
+  SettingsManager *settings;
 
 public:
-  LocalEP(Display *display, RadarMqtt *mqtt) : display(display), mqtt(mqtt) {
+  LocalEP(Display *display, RadarMqtt *mqtt, SettingsManager *settings) : display(display), mqtt(mqtt), settings(settings) {
   }
 
   virtual void Detected(Value *vv) { // String& type, float distanceValue, float strengthValue, bool entry, bool speed_type) {
@@ -57,7 +58,7 @@ public:
       return;
     }
     uint32_t currentMillis = millis();
-    if (mqtt->tracking_interval && (currentMillis - lastTrackingUpdateTime >= mqtt->tracking_interval)) {
+    if (settings->tracking && (currentMillis - lastTrackingUpdateTime >= settings->tracking)) {
       mqtt->mqtt_track(vv);
       lastTrackingUpdateTime = currentMillis;  // Update the last update time
     }
@@ -83,7 +84,7 @@ void setup() {
   display->scroller_start();
 
   mqtt = new RadarMqtt{display, settings};
-  auto *lep = new LocalEP{display, mqtt};
+  auto *lep = new LocalEP{display, mqtt, settings};
 
   if (settings->radarType == "ld2411") {
     radarSensor = new LD2411{lep};
