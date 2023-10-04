@@ -5,7 +5,7 @@
 class LD2411 : public RadarSensor {
   HardwareSerial SerialR;
 public:
-  LD2411(EventProc* ep, SettingsManager *settings, int8_t RxPin = 33, int8_t TxPin = 32) : RadarSensor(ep, settings), SerialR(1)  {
+  LD2411(EventProc* ep, SettingsManager *settings, int8_t RxPin = LD_RX, int8_t TxPin = LD_TX) : RadarSensor(ep, settings), SerialR(1)  {
     SerialR.begin(256000, SERIAL_8N1, RxPin, TxPin);
   }
 

@@ -7,7 +7,7 @@ class LD306 : public RadarSensor {
   int ldEnablePin;
 
 public:
-  LD306(EventProc* ep, SettingsManager *settings, int8_t RxPin = 21, int8_t TxPin = 47, int8_t enablePin = 41) : RadarSensor(ep, settings), SerialR(1), ldEnablePin(enablePin)  {
+  LD306(EventProc* ep, SettingsManager *settings, int8_t RxPin = 21, int8_t TxPin = LD_TX, int8_t enablePin = LD_RX) : RadarSensor(ep, settings), SerialR(1), ldEnablePin(enablePin)  {
     pinMode(ldEnablePin, OUTPUT);
     digitalWrite(ldEnablePin, LOW); // Initially disable the radar
     SerialR.begin(9600, SERIAL_8N1, RxPin, TxPin);

@@ -57,7 +57,6 @@ void SettingsManager::setupServer() {
     });
 
     server.begin();
-    Serial.printf("Server started\n");
 }
 
 void SettingsManager::updateAndSaveSettings(AsyncWebServerRequest* request) {

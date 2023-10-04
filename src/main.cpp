@@ -70,6 +70,7 @@ SettingsManager *settings;
 
 void setup() {
   Serial.begin(115200);
+  delay(3000);
 #if defined(NO_DISPLAY)
   Serial.printf("No display\n");
   display = new Display{};
@@ -82,28 +83,22 @@ void setup() {
 
   settings = new SettingsManager{};
   display->scroller_start();
-
   mqtt = new RadarMqtt{display, settings};
   auto *lep = new LocalEP{display, mqtt, settings};
 
+  display->taf("Module '%s'\n", settings->radarType);
   if (settings->radarType == "ld2411") {
     radarSensor = new LD2411{lep, settings};
-    Serial.printf("LD2411  radar module type '%s'\n", settings->radarType);
   } else if (settings->radarType == "ld1125") {
     radarSensor = new LD1125{lep, settings};
-    Serial.printf("LD1125  radar module type '%s'\n", settings->radarType);
   } else if (settings->radarType == "ld2410") {
     radarSensor = new LD2410{lep, settings};
-    Serial.printf("LD2410  radar module type '%s'\n", settings->radarType);
   } else if (settings->radarType == "ld306") {
     radarSensor = new LD306{lep, settings};
-    Serial.printf("LD306  radar module type '%s'\n", settings->radarType);
   } else if (settings->radarType == "ld2450") {
     radarSensor = new LD2450{lep, settings};
-    Serial.printf("LD2450  radar module type '%s'\n", settings->radarType);
   } else {
     display->taf("Undefined radar module type '%s'\n", settings->radarType);
-    Serial.printf("Undefined radar module type '%s' using LDNoRadar\n", settings->radarType);
     radarSensor = new LDNoRadar{lep, settings};
   }
 
