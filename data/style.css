@@ -13,12 +13,39 @@ form {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-select {
-  height: 40px; /* Set the height */
+/* Style the custom-select class */
+.custom-select {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+/* Style the dropdown arrow */
+.custom-select::after {
+  content: '\25BC';
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* Style the dropdown options */
+.custom-select option {
+  padding: 10px;
+  font-size: 16px;
+  background-color: #fff;
+  color: #000;
 }
 
 /* Style the form fields */
-input[type="text"] {
+input[type="text"],
+input[type="number"] {
   width: 100%;
   padding: 12px;
   margin: 8px 0;
@@ -43,7 +70,6 @@ input[type="submit"]:hover {
   background-color: #45a049;
 }
 
-
 /* Style the clear settings link */
 a {
   display: inline-block;
@@ -59,6 +85,7 @@ a {
 a:hover {
   background-color: #d32f2f;
 }
+
 .cancel-button {
   display: inline-block;
   margin-top: 10px;
@@ -70,60 +97,7 @@ a:hover {
   border-radius: 4px;
   cursor: pointer;
 }
-/* Radar Base */
-.radar {
-    width: 60px;  /* Adjusted for a smaller radar */
-    height: 60px; /* Adjusted for a smaller radar */
-    border: 4px solid #4CAF50;
-    border-radius: 50%;
-    position: relative;
-    animation: spin 6s linear infinite; /* Makes the radar spin */
-}
-/* Radar Scanning Waves */
 
-/* Radar Scanning Waves with Rotation */
-.radar::before,
-.radar::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 50%;
-    background: conic-gradient(rgba(72, 239, 128, 0.5), transparent); /* Conic gradient added */
-    animation: spin 6s linear infinite; /* Apply spin animation */
-}
-
-.radar::before {
-    transform: scale(0.6);
-}
-
-.radar::after {
-    transform: scale(0.8);
-}
-
-/* Animation for the radar spinning */
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* Animation for the radar waves scaling up */
-@keyframes scaleUp {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(1.5);
-        opacity: 0; /* Makes the waves fade out as they scale up */
-    }
-}
 /* Message box */
 .message-box {
   border: 2px solid #4CAF50;
@@ -131,4 +105,41 @@ a:hover {
   padding: 15px;
   margin: 10px 0;
   text-align: center;
+}
+/* Style the config-box */
+.config-box {
+  background-color: #f2f2f2; /* Add a background color */
+  padding: 20px; /* Add padding for spacing */
+  border: 2px solid #4CAF50; /* Add a border */
+  border-radius: 8px; /* Add rounded corners */
+  margin-top: 20px; /* Add margin to separate from other content */
+}
+
+/* Style the text inside the config-box */
+.config-box h2 {
+  font-size: 24px; /* Adjust the heading font size */
+  margin-bottom: 10px; /* Add margin below the heading */
+}
+.config-box p {
+  font-size: 16px; /* Adjust the paragraph font size */
+  margin: 5px 0; /* Add margin to paragraphs for spacing */
+}
+/* Style the config-item */
+.config-item {
+  border: 2px solid #ccc; /* Add a border around each item */
+  padding: 10px; /* Add padding for spacing */
+  margin: 10px 0; /* Add margin between items */
+  border-radius: 4px; /* Add rounded corners */
+  display: flex; /* Use flex to align label and value horizontally */
+  justify-content: space-between; /* Space between label and value */
+}
+
+/* Style the item-label (left side) */
+.item-label {
+  font-weight: bold; /* Make label text bold */
+}
+
+/* Style the item-value (right side) */
+.item-value {
+  color: #4CAF50; /* Add color to value text */
 }

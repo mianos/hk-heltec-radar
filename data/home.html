@@ -2,19 +2,41 @@
 <html>
 <head>
   <title>Radar Config</title>
-  <link rel="stylesheet" type="text/css" href="/style.css">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="radar.css">
 </head>
 <body onload="checkMessageBox()">
   <div class="container">
     <div class="radar"></div>
     <h1>Radar Config</h1>
     <div id="message-box" class="message-box">%MESSAGE%</div>
-    <p>MQTT Server: %MQTT_SERVER%</p>
-    <p>Radar Type: %RADAR_TYPE%</p>
-    <p>MQTT Port: %MQTT_PORT%</p>
-    <p>Sensor Name: %SENSOR_NAME%</p>
-    <p>Tracking rate: %TRACKING_RATE%</p>
-    <a href="/config">Go to Configuration</a>
+
+    <!-- Fancy-looking div box for radar configuration -->
+    <div class="config-box">
+      <h2>Radar Configuration</h2>
+      <div class="config-item">
+        <div class="item-label">MQTT Server:</div>
+        <div class="item-value">%MQTT_SERVER%</div>
+      </div>
+      <div class="config-item">
+        <div class="item-label">Radar Type:</div>
+        <div class="item-value">%RADAR_TYPE%</div>
+      </div>
+      <div class="config-item">
+        <div class="item-label">MQTT Port:</div>
+        <div class="item-value">%MQTT_PORT%</div>
+      </div>
+      <div class="config-item">
+        <div class="item-label">Sensor Name:</div>
+        <div class="item-value">%SENSOR_NAME%</div>
+      </div>
+      <div class="config-item">
+        <div class="item-label">Tracking rate:</div>
+        <div class="item-value">%TRACKING_RATE%</div>
+      </div>
+    </div>
+    
+    <a href="config.html" class="cancel-button">Go to Configuration</a>
   </div>
 
   <script>

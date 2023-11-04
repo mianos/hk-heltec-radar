@@ -1,0 +1,53 @@
+/* Style the radar base */
+.radar {
+  width: 60px;
+  height: 60px;
+  border: 4px solid #4CAF50;
+  border-radius: 50%;
+  position: relative;
+  animation: spin 6s linear infinite;
+}
+
+/* Radar Scanning Waves with Rotation */
+.radar::before,
+.radar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: conic-gradient(rgba(72, 239, 128, 0.5), transparent);
+  animation: spin 6s linear infinite;
+}
+
+.radar::before {
+  transform: scale(0.6);
+}
+
+.radar::after {
+  transform: scale(0.8);
+}
+
+/* Animation for the radar spinning */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animation for the radar waves scaling up */
+@keyframes scaleUp {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
