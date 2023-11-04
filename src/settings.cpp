@@ -16,7 +16,8 @@ void SettingsManager::setupServer() {
     }
 
     // Serve static files
-    serveStaticFile("/style.css");
+    serveStaticFile("style.css");
+    serveStaticFile("radar.css");
     server.serveStatic("/time", SPIFFS, "/time.html");
 
     server.on("/status", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -30,7 +31,7 @@ void SettingsManager::setupServer() {
     });
 
     // Server routing setup
-    server.on("/config", HTTP_GET, [&](AsyncWebServerRequest* request) {
+    server.on("config.html", HTTP_GET, [&](AsyncWebServerRequest* request) {
         message.clear();
         request->send(SPIFFS, "/config.html", String(), false, [&](const String& var) {
             return processor(var);
